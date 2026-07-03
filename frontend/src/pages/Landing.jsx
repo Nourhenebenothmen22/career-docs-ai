@@ -5,6 +5,7 @@ import {
   ArrowRightIcon, SparklesIcon, CheckCircleIcon,
 } from '@heroicons/react/24/outline';
 import Button from '../components/ui/Button';
+import LanguageSwitcher from '../components/ui/LanguageSwitcher';
 import Newsletter from '../components/layout/Newsletter';
 import Footer from '../components/layout/Footer';
 
@@ -48,6 +49,7 @@ export default function Landing() {
             <span className="text-base font-bold text-gray-900">{t('app.name')}</span>
           </Link>
           <div className="flex items-center gap-3">
+            <LanguageSwitcher />
             <Link to="/dashboard">
               <Button variant="primary" size="sm">
                 {t('landing.getStarted')}
