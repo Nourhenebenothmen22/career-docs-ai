@@ -3,15 +3,7 @@ const motivationService = require('../services/motivation.service');
 exports.generate = async (req, res, next) => {
   try {
     const result = await motivationService.generate(req.body);
-    res.json({
-      success: true,
-      data: {
-        id: result.id,
-        letterText: result.letterText,
-        htmlContent: result.htmlContent,
-        createdAt: result.createdAt,
-      },
-    });
+    res.json({ success: true, data: { id: result.id, letterText: result.letterText, htmlContent: result.htmlContent, createdAt: result.createdAt } });
   } catch (error) {
     next(error);
   }

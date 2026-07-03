@@ -1,4 +1,5 @@
 const { body, param, query } = require('express-validator');
+const { EXPERIENCE_LEVELS, PERFORMANCE_LEVELS, LANGUAGES } = require('./constants');
 
 const motivationValidation = [
   body('fullName').trim().notEmpty().withMessage('Full name is required'),
@@ -7,9 +8,9 @@ const motivationValidation = [
   body('jobTitle').trim().notEmpty().withMessage('Job title is required'),
   body('companyName').trim().notEmpty().withMessage('Company name is required'),
   body('skills').isArray({ min: 1 }).withMessage('At least one skill is required'),
-  body('skills.*').trim().notEmpty().withMessage('Skills must not be empty'),
-  body('experienceLevel').isIn(['junior', 'mid', 'senior']).withMessage('Experience level must be junior, mid, or senior'),
-  body('language').isIn(['FR', 'EN']).withMessage('Language must be FR or EN'),
+  body('skills.*').trim().notEmpty().withMessage('Each skill must not be empty'),
+  body('experienceLevel').isIn(EXPERIENCE_LEVELS).withMessage(`Experience level must be ${EXPERIENCE_LEVELS.join(', ')}`),
+  body('language').isIn(LANGUAGES).withMessage(`Language must be ${LANGUAGES.join(' or ')}`),
 ];
 
 const recommendationValidation = [
@@ -17,17 +18,22 @@ const recommendationValidation = [
   body('recommenderRole').trim().notEmpty().withMessage('Recommender role is required'),
   body('candidateName').trim().notEmpty().withMessage('Candidate name is required'),
   body('candidateRole').trim().notEmpty().withMessage('Candidate role is required'),
-  body('relationshipToCandidate').trim().notEmpty().withMessage('Relationship to candidate is required'),
+  body('relationshipToCandidate').trim().notEmpty().withMessage('Relationship is required'),
   body('companyName').trim().notEmpty().withMessage('Company name is required'),
-  body('durationWorkedTogether').trim().notEmpty().withMessage('Duration worked together is required'),
-  body('skillsObserved').isArray({ min: 1 }).withMessage('At least one observed skill is required'),
-  body('skillsObserved.*').trim().notEmpty().withMessage('Skills must not be empty'),
-  body('performanceLevel').isIn(['excellent', 'very good', 'good']).withMessage('Performance level must be excellent, very good, or good'),
-  body('language').optional().isIn(['FR', 'EN']).withMessage('Language must be FR or EN'),
+  body('durationWorkedTogether').trim().notEmpty().withMessage('Duration is required'),
+  body('skillsObserved').isArray({ min: 1 }).withMessage('At least one skill is required'),
+  body('skillsObserved.*').trim().notEmpty().withMessage('Each skill must not be empty'),
+  body('performanceLevel').isIn(PERFORMANCE_LEVELS).withMessage(`Performance level must be ${PERFORMANCE_LEVELS.join(', ')}`),
+  body('language').optional().isIn(LANGUAGES).withMessage(`Language must be ${LANGUAGES.join(' or ')}`),
+];
+
+const historyPagination = [
+  query('page').optional().isInt({ min: 1 }).toInt().withMessage('Page must be a positive integer'),
+  query('limit').optional().isInt({ min: 1, max: 100 }).toInt().withMessage('Limit must be between 1 and 100'),
 ];
 
 const idParam = [
   param('id').isMongoId().withMessage('Invalid document ID'),
 ];
 
-module.exports = { motivationValidation, recommendationValidation, idParam };
+module.exports = { motivationValidation, recommendationValidation, historyPagination, idParam };
