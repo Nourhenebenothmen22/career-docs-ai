@@ -20,16 +20,16 @@ export default function Newsletter() {
   };
 
   return (
-    <section className="border-t border-gray-100 bg-gradient-to-br from-primary-50 via-white to-blue-50">
+    <section className="border-t bg-primary-50/60">
       <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-2xl text-center">
-          <h2 className="text-2xl font-bold text-gray-900 sm:text-3xl">{t('newsletter.title')}</h2>
-          <p className="mt-3 text-base text-gray-500">{t('newsletter.subtitle')}</p>
+        <div className="mx-auto max-w-xl text-center">
+          <h2 className="text-heading text-gray-900">{t('newsletter.title')}</h2>
+          <p className="mt-3 text-body text-gray-500">{t('newsletter.subtitle')}</p>
 
           <form onSubmit={handleSubmit} className="mt-8">
             {status === 'success' ? (
-              <div className="flex items-center justify-center gap-2 rounded-xl border border-green-200 bg-green-50 px-5 py-3 text-sm font-medium text-green-700">
-                <CheckCircleIcon className="h-5 w-5 flex-shrink-0" />
+              <div className="flex items-center justify-center gap-2 rounded-card border border-green-200 bg-green-50 px-5 py-3 text-caption font-medium text-green-700">
+                <CheckCircleIcon className="h-5 w-5 shrink-0" aria-hidden="true" />
                 {t('newsletter.success')}
               </div>
             ) : (
@@ -39,21 +39,22 @@ export default function Newsletter() {
                   value={email}
                   onChange={e => setEmail(e.target.value)}
                   placeholder={t('newsletter.placeholder')}
-                  className={`flex-1 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm text-gray-900 placeholder-gray-400 shadow-sm transition-all focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 ${isRtl ? 'text-right' : ''}`}
+                  aria-label={t('newsletter.placeholder')}
+                  className={`flex-1 rounded-button border border-gray-300 bg-white px-4 py-2.5 text-caption text-gray-900 placeholder-gray-400 shadow-button transition-all focus-visible:border-primary-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500/30 ${isRtl ? 'text-right' : ''}`}
                   required
                 />
                 <button
                   type="submit"
                   disabled={status === 'loading'}
-                  className="inline-flex items-center justify-center gap-2 rounded-lg bg-primary-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-all hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 disabled:opacity-50"
+                  className="inline-flex items-center justify-center gap-2 rounded-button bg-primary-600 px-5 py-2.5 text-caption font-semibold text-white shadow-button transition-all hover:bg-primary-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2 disabled:opacity-50"
                 >
                   {status === 'loading' ? (
-                    <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
+                    <svg className="h-4 w-4 animate-spinner" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                     </svg>
                   ) : (
-                    <PaperAirplaneIcon className="h-4 w-4" />
+                    <PaperAirplaneIcon className="h-4 w-4" aria-hidden="true" />
                   )}
                   {t('newsletter.button')}
                 </button>
