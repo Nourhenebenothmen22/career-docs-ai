@@ -27,7 +27,13 @@ export default function Layout() {
   return (
     <div className="min-h-screen bg-gray-50" dir={isRtl ? 'rtl' : 'ltr'}>
       <Sidebar />
-      <div className={`flex min-h-screen flex-col transition-all duration-300 ${sidebarOpen ? 'ml-64' : 'ml-16'}`}>
+      <div
+        className={`flex min-h-screen flex-col transition-all duration-300 ${
+          sidebarOpen
+            ? isRtl ? 'mr-64' : 'ml-64'
+            : isRtl ? 'mr-16' : 'ml-16'
+        }`}
+      >
         <Navbar />
         <main className="flex-1">
           <Suspense fallback={<LoadingFallback />}>

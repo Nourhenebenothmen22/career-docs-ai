@@ -26,7 +26,7 @@ export default function Sidebar() {
       } ${sidebarOpen ? 'w-64' : 'w-16'}`}
     >
       <div className={`flex h-16 items-center border-b border-gray-200 ${sidebarOpen ? 'gap-3 px-5' : 'justify-center px-2'}`}>
-        <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg bg-primary-600">
+        <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg bg-primary-600 shadow-sm">
           <DocumentTextIcon className="h-5 w-5 text-white" />
         </div>
         {sidebarOpen && <span className="whitespace-nowrap text-base font-bold text-gray-900">{t('app.name')}</span>}
@@ -58,7 +58,11 @@ export default function Sidebar() {
           className="flex w-full items-center justify-center rounded-lg p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors"
           title={sidebarOpen ? 'Collapse' : 'Expand'}
         >
-          {sidebarOpen ? <ChevronLeftIcon className="h-4 w-4" /> : <ChevronRightIcon className="h-4 w-4" />}
+          {sidebarOpen ? (
+            isRtl ? <ChevronRightIcon className="h-4 w-4" /> : <ChevronLeftIcon className="h-4 w-4" />
+          ) : (
+            isRtl ? <ChevronLeftIcon className="h-4 w-4" /> : <ChevronRightIcon className="h-4 w-4" />
+          )}
         </button>
       </div>
     </aside>
