@@ -6,6 +6,7 @@ import {
 } from '@heroicons/react/24/outline';
 import Button from '../components/ui/Button';
 import Newsletter from '../components/layout/Newsletter';
+import Footer from '../components/layout/Footer';
 
 const features = (t) => [
   {
@@ -152,9 +153,7 @@ export default function Landing() {
 
       <Newsletter />
 
-      <footer className="border-t border-gray-100 bg-white px-4 py-8 text-center text-sm text-gray-400">
-        &copy; {new Date().getFullYear()} {t('app.name')}. {t('footer.rights')}
-      </footer>
+      <Footer />
     </div>
   );
 }
