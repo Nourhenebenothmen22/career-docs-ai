@@ -1,12 +1,13 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ClipboardIcon, ArrowDownTrayIcon } from '@heroicons/react/24/outline';
 import MotivationForm from '../components/forms/MotivationForm';
 import PreviewPanel from '../components/preview/PreviewPanel';
-import LoadingOverlay from '../components/ui/Button';
+import GeneratingOverlay from '../components/ui/GeneratingOverlay';
 import Button from '../components/ui/Button';
 import { useFormState } from '../hooks/useFormState';
 import { motivationApi } from '../services/api';
+import { validateMotivation, parseSkills } from '../utils/validators';
 import useAppStore from '../store/useAppStore';
 
 const initialForm = {
@@ -24,82 +25,57 @@ export default function MotivationLetter() {
   const setGenerating = useAppStore(s => s.setGenerating);
   const addToast = useAppStore(s => s.addToast);
 
-  const validate = () => {
-    const errs = {};
-    ['fullName', 'email', 'phone', 'jobTitle', 'companyName', 'skills'].forEach(f => {
-      if (!formData[f].trim()) errs[f] = t('motivation.required');
-    });
-    setErrors(errs);
-    return Object.keys(errs).length === 0;
-  };
-
-  const handleGenerate = async () => {
-    if (!validate()) return;
+  const handleGenerate = useCallback(async () => {
+    const errs = validateMotivation(formData, t);
+    if (Object.keys(errs).length > 0) {
+      setErrors(errs);
+      return;
+    }
     setGenerating(true);
     setResult(null);
+    setErrors({});
     try {
-      const payload = {
-        ...formData,
-        skills: formData.skills.split(',').map(s => s.trim()).filter(Boolean),
-        linkedin: formData.linkedin || undefined,
-      };
+      const payload = { ...formData, skills: parseSkills(formData.skills), linkedin: formData.linkedin || undefined };
       const res = await motivationApi.generate(payload);
       setResult(res.data);
       addToast('Letter generated successfully!', 'success');
     } catch (e) {
-      setErrors({ api: e.response?.data?.message || t('common.error') });
+      setErrors({ api: e.message || t('common.error') });
       addToast('Generation failed. Please try again.', 'error');
     } finally {
       setGenerating(false);
     }
-  };
+  }, [formData, t, setGenerating, setErrors, addToast]);
 
-  const handleDownloadPdf = async () => {
+  const handleDownloadPdf = useCallback(async () => {
     try {
-      const payload = {
-        ...formData,
-        skills: formData.skills.split(',').map(s => s.trim()).filter(Boolean),
-      };
+      const payload = { ...formData, skills: parseSkills(formData.skills) };
       await motivationApi.downloadPdf(payload);
       addToast('PDF downloaded successfully!', 'success');
     } catch {
       addToast('PDF download unavailable — Chromium not installed.', 'error');
     }
-  };
+  }, [formData, addToast]);
 
-  const handleCopy = async () => {
+  const handleCopy = useCallback(async () => {
     if (result?.letterText) {
       await navigator.clipboard.writeText(result.letterText);
       setCopied(true);
       addToast(t('motivation.copied'), 'success');
       setTimeout(() => setCopied(false), 2000);
     }
-  };
+  }, [result, t, addToast]);
 
-  const handleReset = () => { reset(); setResult(null); };
+  const handleReset = useCallback(() => { reset(); setResult(null); }, [reset]);
 
   return (
     <>
-      {generating && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm">
-          <div className="rounded-xl border border-gray-200 bg-white p-8 shadow-xl">
-            <div className="flex flex-col items-center gap-4">
-              <div className="relative h-12 w-12">
-                <div className="absolute inset-0 animate-ping rounded-full bg-primary-400 opacity-30" />
-                <div className="absolute inset-0 animate-spin rounded-full border-4 border-primary-200 border-t-primary-600" />
-              </div>
-              <p className="text-sm font-medium text-gray-600">{t('motivation.generating')}</p>
-            </div>
-          </div>
-        </div>
-      )}
-
+      <GeneratingOverlay visible={generating} message={t('motivation.generating')} />
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <div className="mb-8">
           <h1 className="text-2xl font-bold text-gray-900">{t('motivation.title')}</h1>
           <p className="mt-1 text-sm text-gray-500">{t('motivation.subtitle')}</p>
         </div>
-
         <div className="grid gap-8 xl:grid-cols-2">
           <div>
             <MotivationForm
@@ -111,7 +87,6 @@ export default function MotivationLetter() {
               loading={generating}
             />
           </div>
-
           <div>
             {result && (
               <div className="mb-4 flex flex-wrap gap-2">
