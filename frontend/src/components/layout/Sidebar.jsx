@@ -25,10 +25,8 @@ export default function Sidebar() {
         isRtl ? 'right-0 border-l' : 'left-0 border-r'
       } ${sidebarOpen ? 'w-64' : 'w-16'}`}
     >
-      <div className={`flex h-16 items-center border-b border-gray-200 ${sidebarOpen ? 'gap-3 px-5' : 'justify-center px-2'}`}>
-        <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg bg-primary-600 shadow-sm">
-          <DocumentTextIcon className="h-5 w-5 text-white" />
-        </div>
+        <div className={`flex h-16 items-center border-b border-gray-200 ${sidebarOpen ? 'gap-3 px-5' : 'justify-center px-2'}`}>
+        <img src="/logo-risalatech.png" alt="RISALATECH" className="h-8 w-auto" />
         {sidebarOpen && <span className="whitespace-nowrap text-base font-bold text-gray-900">{t('app.name')}</span>}
       </div>
 
