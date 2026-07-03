@@ -1,7 +1,6 @@
-const config = require('../config');
-
+const isProduction = process.env.NODE_ENV === 'production';
 const LEVELS = { error: 0, warn: 1, info: 2, debug: 3 };
-const currentLevel = LEVELS[config.nodeEnv === 'production' ? 'info' : 'debug'];
+const currentLevel = LEVELS[isProduction ? 'info' : 'debug'];
 
 function formatMessage(level, msg, meta) {
   const entry = {
@@ -10,7 +9,7 @@ function formatMessage(level, msg, meta) {
     message: msg,
     ...(meta && { meta }),
   };
-  return config.nodeEnv === 'production'
+  return isProduction
     ? JSON.stringify(entry)
     : `[${entry.timestamp}] ${level.toUpperCase()}: ${msg}${meta ? ' ' + JSON.stringify(meta) : ''}`;
 }
