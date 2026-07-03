@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next';
-import { EnvelopeIcon, PhoneIcon } from '@heroicons/react/24/outline';
+import { Link } from 'react-router-dom';
+import { EnvelopeIcon } from '@heroicons/react/24/outline';
 
 const contacts = [
   {
@@ -37,34 +38,92 @@ const contacts = [
 ];
 
 export default function Footer() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const isRtl = i18n.language === 'ar';
 
   return (
-    <footer className="mt-auto border-t border-gray-200 bg-gray-50">
-      <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
-        <div className="flex flex-col items-center justify-between gap-8 sm:flex-row">
-          <div className="text-center sm:text-left">
-            <p className="text-sm font-semibold text-gray-900">{t('footer.contact')}</p>
-            <div className="mt-3 flex flex-wrap justify-center gap-4 sm:justify-start">
-              {contacts.map(contact => (
-                <a
-                  key={contact.label}
-                  href={contact.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="group flex items-center gap-2 text-sm text-gray-500 transition-colors hover:text-primary-600"
-                  title={contact.label}
-                >
-                  <span className="transition-transform group-hover:scale-110">{contact.icon}</span>
-                  <span className="hidden sm:inline">{contact.label}</span>
-                </a>
+    <footer className="mt-auto border-t border-gray-100 bg-gray-900">
+      <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
+        <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
+          <div>
+            <h3 className="text-sm font-semibold uppercase tracking-wider text-gray-400">{t('footer.company')}</h3>
+            <ul className="mt-4 space-y-3">
+              {['about', 'features', 'faq'].map(item => (
+                <li key={item}>
+                  <Link to="/dashboard" className="text-sm text-gray-300 transition-colors hover:text-white">
+                    {t(`footer.${item}`)}
+                  </Link>
+                </li>
               ))}
-            </div>
+            </ul>
           </div>
-          <div className="text-center text-sm text-gray-400 sm:text-right">
-            <p className="font-semibold text-gray-900">{t('app.name')}</p>
-            <p className="mt-1">&copy; {new Date().getFullYear()} {t('footer.rights')}</p>
+
+          <div>
+            <h3 className="text-sm font-semibold uppercase tracking-wider text-gray-400">{t('footer.products')}</h3>
+            <ul className="mt-4 space-y-3">
+              <li>
+                <Link to="/motivation-letter" className="text-sm text-gray-300 transition-colors hover:text-white">
+                  {t('footer.motivationLetter')}
+                </Link>
+              </li>
+              <li>
+                <Link to="/recommendation-letter" className="text-sm text-gray-300 transition-colors hover:text-white">
+                  {t('footer.recommendationLetter')}
+                </Link>
+              </li>
+            </ul>
           </div>
+
+          <div>
+            <h3 className="text-sm font-semibold uppercase tracking-wider text-gray-400">{t('footer.resources')}</h3>
+            <ul className="mt-4 space-y-3">
+              {['documentation', 'privacy', 'terms'].map(item => (
+                <li key={item}>
+                  <a href="#" className="text-sm text-gray-300 transition-colors hover:text-white">
+                    {t(`footer.${item}`)}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <div>
+            <h3 className="text-sm font-semibold uppercase tracking-wider text-gray-400">{t('footer.contact')}</h3>
+            <ul className="mt-4 space-y-3">
+              {contacts.map(contact => (
+                <li key={contact.label}>
+                  <a
+                    href={contact.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="group inline-flex items-center gap-2 text-sm text-gray-300 transition-colors hover:text-white"
+                  >
+                    <span className="transition-transform group-hover:scale-110">{contact.icon}</span>
+                    {contact.label}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div className="border-t border-gray-800">
+        <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 px-4 py-6 sm:flex-row sm:px-6 lg:px-8">
+          <p className="text-sm text-gray-500">
+            &copy; {new Date().getFullYear()} {t('app.name')}. {t('footer.rights')}
+          </p>
+          <p className={`text-sm text-gray-500 ${isRtl ? 'text-right' : 'text-right sm:text-right'}`}>
+            {t('footer.designedBy')}{' '}
+            <a
+              href="https://www.linkedin.com/in/nourhene-ben-othmen-dev/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-medium text-gray-400 transition-colors hover:text-white"
+            >
+              {t('footer.name')}
+            </a>
+          </p>
         </div>
       </div>
     </footer>
