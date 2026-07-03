@@ -10,22 +10,30 @@ class RecommendationService {
     const prompt = promptBuilder.buildRecommendationPrompt(enrichedData);
     const letterText = await aiService.generate(prompt);
     const htmlContent = htmlTemplate.recommendationLetter(enrichedData, letterText);
-    const pdfBuffer = await pdfGenerator.generate(htmlContent);
 
-    const doc = await Document.create({
-      type: 'recommendation',
-      inputData: enrichedData,
-      letterText,
-      htmlContent,
-    });
+    let doc;
+    try {
+      doc = await Document.create({ type: 'recommendation', inputData: enrichedData, letterText, htmlContent });
+    } catch (err) {
+      console.warn('MongoDB save skipped:', err.message);
+    }
 
     return {
-      id: doc._id,
+      id: doc?._id,
       letterText,
       htmlContent,
-      pdfBuffer,
-      createdAt: doc.createdAt,
+      createdAt: doc?.createdAt || new Date(),
     };
+  }
+
+  async generateWithPdf(data) {
+    const result = await this.generate(data);
+    try {
+      result.pdfBuffer = await pdfGenerator.generate(result.htmlContent);
+    } catch (err) {
+      console.warn('PDF generation skipped:', err.message);
+    }
+    return result;
   }
 }
 
