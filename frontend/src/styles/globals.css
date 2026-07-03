@@ -1,0 +1,27 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-gray-50 text-gray-900 antialiased;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  }
+
+  [dir="rtl"] {
+    .ml-64 { margin-left: 0; margin-right: 16rem; }
+    .ml-16 { margin-left: 0; margin-right: 4rem; }
+    .pl-64 { padding-left: 0; padding-right: 16rem; }
+    .left-0 { left: auto; right: 0; }
+    .right-0 { right: auto; left: 0; }
+    .border-r { border-right-width: 0; border-left-width: 1px; }
+    .border-l { border-left-width: 0; border-right-width: 1px; }
+    .space-x-reverse > :not([hidden]) ~ :not([hidden]) { --tw-space-x-reverse: 1; }
+  }
+}
+
+@layer components {
+  .skeleton {
+    @apply animate-pulse rounded-lg bg-gray-200;
+  }
+}
