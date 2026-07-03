@@ -37,7 +37,33 @@
     "feature3Desc": "All documents follow professional HR writing standards with A4 PDF export.",
     "ctaTitle": "Ready to create your first document?",
     "ctaDesc": "No prompts. No templates. Just structured inputs and professional outputs.",
-    "getStarted": "Get Started"
+    "getStarted": "Get Started",
+    "badge": "AI-Powered Document Generation"
+  },
+  "newsletter": {
+    "title": "Stay Updated",
+    "subtitle": "Subscribe to receive product updates, new features and AI improvements.",
+    "placeholder": "Enter your email address",
+    "button": "Subscribe",
+    "success": "Thank you for subscribing!",
+    "error": "Subscription failed. Please try again."
+  },
+  "footer": {
+    "company": "Company",
+    "about": "About",
+    "features": "Features",
+    "faq": "FAQ",
+    "products": "Products",
+    "motivationLetter": "Motivation Letter Generator",
+    "recommendationLetter": "Recommendation Letter Generator",
+    "resources": "Resources",
+    "documentation": "Documentation",
+    "privacy": "Privacy Policy",
+    "terms": "Terms of Service",
+    "contact": "Contact",
+    "rights": "All rights reserved.",
+    "designedBy": "Designed and Developed by",
+    "name": "Nourhene Ben Othmen"
   },
   "motivation": {
     "title": "Motivation Letter Generator",
@@ -112,12 +138,6 @@
     "next": "Next",
     "page": "Page"
   },
-  "footer": {
-    "contact": "Contact",
-    "email": "Email",
-    "phone": "Phone",
-    "rights": "All rights reserved."
-  },
   "common": {
     "loading": "Loading...",
     "error": "An error occurred",
@@ -128,6 +148,7 @@
     "close": "Close",
     "send": "Send",
     "search": "Search",
-    "noResults": "No results found"
+    "noResults": "No results found",
+    "language": "Language"
   }
 }

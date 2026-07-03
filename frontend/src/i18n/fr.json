@@ -37,7 +37,33 @@
     "feature3Desc": "Tous les documents suivent les normes d'écriture RH professionnelles avec export PDF A4.",
     "ctaTitle": "Prêt à créer votre premier document ?",
     "ctaDesc": "Ni prompts, ni modèles. Des données structurées et des résultats professionnels.",
-    "getStarted": "Commencer"
+    "getStarted": "Commencer",
+    "badge": "Génération de Documents par IA"
+  },
+  "newsletter": {
+    "title": "Restez Informé",
+    "subtitle": "Abonnez-vous pour recevoir les mises à jour produit, les nouvelles fonctionnalités et les améliorations IA.",
+    "placeholder": "Entrez votre adresse email",
+    "button": "S'abonner",
+    "success": "Merci de votre abonnement !",
+    "error": "Échec de l'abonnement. Veuillez réessayer."
+  },
+  "footer": {
+    "company": "Société",
+    "about": "À Propos",
+    "features": "Fonctionnalités",
+    "faq": "FAQ",
+    "products": "Produits",
+    "motivationLetter": "Générateur de Lettre de Motivation",
+    "recommendationLetter": "Générateur de Lettre de Recommandation",
+    "resources": "Ressources",
+    "documentation": "Documentation",
+    "privacy": "Politique de Confidentialité",
+    "terms": "Conditions d'Utilisation",
+    "contact": "Contact",
+    "rights": "Tous droits réservés.",
+    "designedBy": "Conçu et Développé par",
+    "name": "Nourhene Ben Othmen"
   },
   "motivation": {
     "title": "Générateur de Lettre de Motivation",
@@ -112,12 +138,6 @@
     "next": "Suivant",
     "page": "Page"
   },
-  "footer": {
-    "contact": "Contact",
-    "email": "Email",
-    "phone": "Téléphone",
-    "rights": "Tous droits réservés."
-  },
   "common": {
     "loading": "Chargement...",
     "error": "Une erreur est survenue",
@@ -128,6 +148,7 @@
     "close": "Fermer",
     "send": "Envoyer",
     "search": "Rechercher",
-    "noResults": "Aucun résultat trouvé"
+    "noResults": "Aucun résultat trouvé",
+    "language": "Langue"
   }
 }
