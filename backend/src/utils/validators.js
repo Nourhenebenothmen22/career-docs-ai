@@ -11,6 +11,11 @@ const motivationValidation = [
   body('skills.*').trim().notEmpty().withMessage('Each skill must not be empty'),
   body('experienceLevel').isIn(EXPERIENCE_LEVELS).withMessage(`Experience level must be ${EXPERIENCE_LEVELS.join(', ')}`),
   body('language').isIn(LANGUAGES).withMessage(`Language must be ${LANGUAGES.join(' or ')}`),
+  body('clubs').optional().isArray(),
+  body('clubs.*.clubName').optional({ values: 'falsy' }).trim().notEmpty(),
+  body('clubs.*.role').optional({ values: 'falsy' }).isIn(['member', 'coordinator', 'president', 'vicePresident', 'organizer']),
+  body('clubs.*.duration').optional().trim(),
+  body('clubs.*.responsibilities').optional().trim(),
 ];
 
 const recommendationValidation = [

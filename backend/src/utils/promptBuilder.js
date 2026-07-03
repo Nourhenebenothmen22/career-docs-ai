@@ -1,11 +1,15 @@
 class PromptBuilder {
   buildMotivationPrompt(data) {
-    const { fullName, jobTitle, companyName, skills, experienceLevel, language } = data;
+    const { fullName, jobTitle, companyName, skills, experienceLevel, language, clubs } = data;
     const toneGuide = this.getToneGuide(experienceLevel);
     const lang = language === 'FR' ? 'French' : 'English';
     const langInstruction = language === 'FR'
       ? 'Write the entire letter in French.'
       : 'Write the entire letter in English.';
+
+    const clubsText = (clubs || []).filter(c => c.clubName?.trim()).map(c =>
+      `- ${c.clubName} (${c.role || 'member'})${c.duration ? `, ${c.duration}` : ''}${c.responsibilities ? `: ${c.responsibilities}` : ''}`
+    ).join('\n');
 
     return `<s>[INST] <<SYS>>
 You are a professional senior HR manager and career letter writer with 20+ years of experience. You write real-world, publication-ready motivation letters (cover letters) that pass HR screening at top companies.
@@ -26,7 +30,7 @@ STRUCTURE:
 Paragraph 1: Professional introduction — who the candidate is, the specific role they are applying for at the company, and a confident opening statement.
 Paragraph 2: Skills and experience alignment — connect the candidate's specific skills with the needs of the target role. Show, don't tell.
 Paragraph 3: Motivation and value proposition — why this company specifically, what the candidate brings, and how they can contribute.
-Paragraph 4 (if needed): Additional relevant context or a stronger value statement.
+Paragraph 4 (if needed): Additional relevant context or a stronger value statement — seamlessly integrate leadership, extracurricular, or organizational experience here to enhance credibility. Use storytelling to connect real-world involvement with professional competence.
 Paragraph 5: Formal closing — polite availability for interview, thanks, and professional sign-off.
 
 TONE GUIDE (${experienceLevel} level):
@@ -40,6 +44,7 @@ Applying for: ${jobTitle} at ${companyName}
 Key Skills: ${skills.join(', ')}
 Experience Level: ${experienceLevel}
 Language: ${language}
+${clubsText ? `\nClubs & Organizations:\n${clubsText}` : ''}
 [/INST]
 
 Dear Hiring Manager,
