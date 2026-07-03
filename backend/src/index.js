@@ -41,7 +41,7 @@ if (config.mongodbUri) {
 }
 
 const server = app.listen(config.port, () => {
-  logger.info(`Career Docs AI backend running on http://localhost:${config.port} [${config.nodeEnv}]`);
+  logger.info(`RISALATECH backend running on http://localhost:${config.port} [${config.nodeEnv}]`);
 });
 
 process.on('SIGTERM', () => {
