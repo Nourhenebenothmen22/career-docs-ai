@@ -1,5 +1,5 @@
 import { lazy, Suspense, useEffect } from 'react';
-import { BrowserRouter, Routes, Route, Navigate, Outlet } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, Outlet, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import './i18n';
 import ErrorBoundary from './components/ErrorBoundary';
@@ -28,7 +28,8 @@ function PageLoader() {
 
 function ProtectedRoute({ children }) {
   const token = useAppStore(s => s.token);
-  return token ? children : <Navigate to="/login" replace />;
+  const location = useLocation();
+  return token ? children : <Navigate to="/login" state={{ from: location }} replace />;
 }
 
 function AuthLayoutWrapper() {
@@ -43,7 +44,8 @@ function AuthLayoutWrapper() {
 }
 
 function RootRedirector() {
-  return <Landing />;
+  const token = useAppStore(s => s.token);
+  return token ? <Navigate to="/motivation-letter" replace /> : <Landing />;
 }
 
 function AppContent() {
@@ -58,19 +60,22 @@ function AppContent() {
   return (
     <ErrorBoundary>
       <BrowserRouter>
-        <Routes>
-          <Route path="/login" element={<Suspense fallback={<PageLoader />}><Login /></Suspense>} />
-          <Route path="/register" element={<Suspense fallback={<PageLoader />}><Register /></Suspense>} />
+        {/* Global Suspense boundary catches lazy loaded components and prevents React Minified Error #426 */}
+        <Suspense fallback={<PageLoader />}>
+          <Routes>
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
 
-          <Route path="/" element={<RootRedirector />} />
+            <Route path="/" element={<RootRedirector />} />
 
-          <Route element={<ProtectedRoute><Suspense fallback={<PageLoader />}><AuthLayoutWrapper /></Suspense></ProtectedRoute>}>
-            <Route path="/motivation-letter" element={<MotivationLetter />} />
-            <Route path="/recommendation-letter" element={<RecommendationLetter />} />
-          </Route>
+            <Route element={<ProtectedRoute><AuthLayoutWrapper /></ProtectedRoute>}>
+              <Route path="/motivation-letter" element={<MotivationLetter />} />
+              <Route path="/recommendation-letter" element={<RecommendationLetter />} />
+            </Route>
 
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </Suspense>
         <ToastContainer />
       </BrowserRouter>
     </ErrorBoundary>
