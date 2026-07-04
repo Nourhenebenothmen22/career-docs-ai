@@ -1,5 +1,6 @@
 const { validationResult } = require('express-validator');
 const { AppError } = require('../utils/AppError');
+const { sanitizeObject } = require('../utils/sanitizer');
 const logger = require('../utils/logger');
 
 const validate = (req, res, next) => {
@@ -11,7 +12,13 @@ const validate = (req, res, next) => {
       errors: errors.array().map(e => ({ field: e.path, message: e.msg })),
     });
   }
-  next();
+
+  try {
+    req.body = sanitizeObject(req.body);
+    next();
+  } catch (err) {
+    next(err);
+  }
 };
 
 const errorHandler = (err, req, res, _next) => {
