@@ -1,10 +1,10 @@
-# RISALATECH â€” Backend API Service
+# RISALATECH GÇö Backend API Service
 
 This is the production-ready Node.js/Express backend service for **RISALATECH**, an AI-powered SaaS platform that automatically generates professional HR documents. It features JWT authentication, Redis caching, BullMQ background worker queuing for PDF generation, S3 object storage caching, multi-provider AI fallbacks, rate limiting, and GDPR compliance endpoints.
 
 ---
 
-## ğŸ› ï¸ Tech Stack
+## =ƒ¢án+Å Tech Stack
 
 * **Runtime**: Node.js v20+
 * **Framework**: Express.js
@@ -17,7 +17,7 @@ This is the production-ready Node.js/Express backend service for **RISALATECH**,
 
 ---
 
-## ğŸ›ï¸ Architecture Overview
+## =ƒÅ¢n+Å Architecture Overview
 
 The backend uses a layered architecture adhering to SOLID principles:
 1. **Routing Layer (`src/routes/`)**: Declares API routes and maps validation middleware.
@@ -29,28 +29,28 @@ The backend uses a layered architecture adhering to SOLID principles:
 
 ---
 
-## ğŸ“‚ Folder Structure
+## =ƒôé Folder Structure
 
 ```
 backend/
-â”œâ”€â”€ src/
-â”‚   â”œâ”€â”€ config/          # Configurations (Database, Redis, S3, Queues)
-â”‚   â”œâ”€â”€ controllers/     # HTTP Request controllers
-â”‚   â”œâ”€â”€ middleware/      # Middlewares (Auth, Rate Limit, Sanitizer, Error)
-â”‚   â”œâ”€â”€ models/          # MongoDB Mongoose Schemas
-â”‚   â”œâ”€â”€ routes/          # Express API route declarations
-â”‚   â”œâ”€â”€ services/        # Business logic services (AI, Cache, S3, Email)
-â”‚   â”œâ”€â”€ utils/           # Shared utility tools (Validators, Templates, Logger)
-â”‚   â”œâ”€â”€ workers/         # BullMQ PDF background workers
-â”‚   â””â”€â”€ index.js         # Express App entrypoint
-â”œâ”€â”€ Dockerfile           # Backend containerization script
-â”œâ”€â”€ package.json         # Node dependencies
-â””â”€â”€ .env.example         # Template configuration env file
+Gö£GöÇGöÇ src/
+Göé   Gö£GöÇGöÇ config/          # Configurations (Database, Redis, S3, Queues)
+Göé   Gö£GöÇGöÇ controllers/     # HTTP Request controllers
+Göé   Gö£GöÇGöÇ middleware/      # Middlewares (Auth, Rate Limit, Sanitizer, Error)
+Göé   Gö£GöÇGöÇ models/          # MongoDB Mongoose Schemas
+Göé   Gö£GöÇGöÇ routes/          # Express API route declarations
+Göé   Gö£GöÇGöÇ services/        # Business logic services (AI, Cache, S3, Email)
+Göé   Gö£GöÇGöÇ utils/           # Shared utility tools (Validators, Templates, Logger)
+Göé   Gö£GöÇGöÇ workers/         # BullMQ PDF background workers
+Göé   GööGöÇGöÇ index.js         # Express App entrypoint
+Gö£GöÇGöÇ Dockerfile           # Backend containerization script
+Gö£GöÇGöÇ package.json         # Node dependencies
+GööGöÇGöÇ .env.example         # Template configuration env file
 ```
 
 ---
 
-## ğŸ”‘ Environment Variables (`.env`)
+## =ƒöæ Environment Variables (`.env`)
 
 Create a `.env` file in `backend/` or the project root. The backend automatically searches parents for it.
 
@@ -59,7 +59,7 @@ PORT=5000                                 # Port to listen on
 NODE_ENV=development                      # development | production
 CORS_ORIGIN=*                             # CORS allowed hosts
 
-MONGODB_URI=mongodb://localhost:27017/db  # MongoDB Connection URI
+MONGODB_URI=mongodb+srv://username:password@cluster0.mongodb.net/career-docs-ai?retryWrites=true&w=majority  # MongoDB Atlas Cloud URI
 REDIS_URL=redis://localhost:6379           # Redis Server URL
 
 S3_ENDPOINT=http://localhost:9000         # S3 endpoint (empty for AWS S3)
@@ -68,11 +68,11 @@ S3_SECRET_KEY=minioadminpassword          # S3 secret access key
 S3_BUCKET=risalatech                      # S3 bucket name
 S3_REGION=us-east-1                       # S3 region code
 
-JWT_SECRET=accessTokenSecretKey           # JWT signing key
-JWT_REFRESH_SECRET=refreshTokenSecretKey  # JWT refresh signing key
+JWT_SECRET=superSecretDevelopmentAccessTokenKeyChangeMe           # JWT signing key
+JWT_REFRESH_SECRET=superSecretDevelopmentRefreshTokenKeyChangeMe  # JWT refresh signing key
 
-HUGGINGFACE_API_KEY=hf_...                # HuggingFace API Token
-HUGGINGFACE_MODEL=mistralai/...           # HuggingFace Model slug
+HUGGINGFACE_API_KEY=hf_your_api_key_here         # HuggingFace API Token
+HUGGINGFACE_MODEL=mistralai/Mistral-7B-Instruct-v0.2              # HuggingFace Model slug
 
 GROQ_API_KEY=gsk_...                      # (Optional) Groq fallback API key
 OPENAI_API_KEY=sk-proj-...                # (Optional) OpenAI fallback API key
@@ -86,38 +86,38 @@ SMTP_SECURE=false
 
 ---
 
-## ğŸ“¡ API Endpoints
+## =ƒôí API Endpoints
 
-### ğŸ” Authentication (`/api/auth`)
+### =ƒöÉ Authentication (`/api/auth`)
 * `POST /api/auth/register`: Create a new user account.
 * `POST /api/auth/login`: Authenticate credentials, set Refresh Cookie, return Access Token.
 * `POST /api/auth/refresh`: Validate refresh token cookie and rotate tokens.
 * `POST /api/auth/logout`: Clear session refresh cookies.
 * `POST /api/auth/oauth`: Authenticate OAuth2 token from Google/GitHub.
 
-### ğŸ“ Motivation Letters (`/api/motivation`)
+### =ƒô¥ Motivation Letters (`/api/motivation`)
 * `POST /api/motivation/generate` (Optional Auth): Generate a letter draft.
 * `POST /api/motivation/download-pdf` (Optional Auth): Synthesize and download PDF.
 * `POST /api/motivation/stream` (Optional Auth): Server-Sent Events (SSE) word-by-word streaming generation.
 
-### ğŸ“ Recommendation Letters (`/api/recommendation`)
+### =ƒÄô Recommendation Letters (`/api/recommendation`)
 * `POST /api/recommendation/generate` (Optional Auth): Generate a recommendation draft.
 * `POST /api/recommendation/download-pdf` (Optional Auth): Synthesize and download PDF.
 * `POST /api/recommendation/stream` (Optional Auth): Server-Sent Events (SSE) word-by-word streaming generation.
 
-### ğŸ“œ Document History (`/api/history`)
+### =ƒô£ Document History (`/api/history`)
 * `GET /api/history` (Auth Required): Paginated list of owned documents.
 * `GET /api/history/:id` (Auth Required): Specific document details.
 * `GET /api/history/:id/pdf` (Auth Required): Download PDF associated with document.
 * `DELETE /api/history/:id` (Auth Required): Delete document record.
 
-### ğŸ›¡ï¸ GDPR Compliance (`/api/gdpr`)
+### =ƒ¢ín+Å GDPR Compliance (`/api/gdpr`)
 * `GET /api/gdpr/export` (Auth Required): Export all user details, documents, and audit logs.
 * `DELETE /api/gdpr/delete` (Auth Required): Anonymize and delete all user records and S3 cache caches.
 
 ---
 
-## ğŸš€ Setup & Launch
+## =ƒÜÇ Setup & Launch
 
 ### Prerequisites
 - Node.js v20+
@@ -145,7 +145,7 @@ SMTP_SECURE=false
 
 ---
 
-## ğŸ³ Docker Deployment
+## =ƒÉ¦ Docker Deployment
 
 The backend contains a production-ready `Dockerfile` featuring a multi-stage Alpine build, Puppeteer system dependencies configuration, and standalone Chromium engine injection.
 
