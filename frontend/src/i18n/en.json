@@ -150,7 +150,8 @@
     "addClub": "Add Club",
     "removeClub": "Remove",
     "clubNameRequired": "Club name is required",
-    "roleRequired": "Role is required"
+    "roleRequired": "Role is required",
+    "invalidEmail": "Please enter a valid email address"
   },
   "recommendation": {
     "title": "Recommendation Letter",

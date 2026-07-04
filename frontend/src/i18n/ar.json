@@ -150,7 +150,8 @@
     "addClub": "إضافة نادي",
     "removeClub": "حذف",
     "clubNameRequired": "اسم النادي مطلوب",
-    "roleRequired": "الدور مطلوب"
+    "roleRequired": "الدور مطلوب",
+    "invalidEmail": "يرجى إدخال بريد إلكتروني صالح"
   },
   "recommendation": {
     "title": "خطاب التوصية",
