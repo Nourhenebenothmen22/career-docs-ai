@@ -109,11 +109,6 @@ async function downloadPdf(url, data, filename) {
   triggerDownload(new Blob([response.data]), filename);
 }
 
-async function downloadPdfById(url, filename) {
-  const response = await api.get(url, { responseType: 'blob' });
-  triggerDownload(new Blob([response.data]), filename);
-}
-
 export const authApi = {
   login: (email, password) => api.post('/auth/login', { email, password }).then(r => r.data),
   register: (name, email, password) => api.post('/auth/register', { name, email, password }).then(r => r.data),
@@ -128,11 +123,4 @@ export const motivationApi = {
 export const recommendationApi = {
   generate: (data) => api.post('/recommendation/generate', data).then(r => r.data),
   downloadPdf: (data) => downloadPdf('/recommendation/download-pdf', data, 'recommendation-letter.pdf'),
-};
-
-export const historyApi = {
-  getAll: (page = 1, limit = 20) => api.get('/history', { params: { page, limit } }).then(r => r.data),
-  getById: (id) => api.get(`/history/${id}`).then(r => r.data),
-  downloadPdf: (id) => downloadPdfById(`/history/${id}/pdf`, `letter-${id}.pdf`),
-  delete: (id) => api.delete(`/history/${id}`).then(r => r.data),
 };
