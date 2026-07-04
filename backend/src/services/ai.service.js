@@ -32,14 +32,28 @@ class AiService {
       if (Date.now() > this.circuitResetAt) {
         this.circuitOpen = false;
         this.failureCount = 0;
-        logger.info('Circuit breaker reset — retrying primary AI API');
+        logger.info('Circuit breaker reset — retrying primary AI APIs');
       } else {
         logger.warn('Circuit breaker open — falling back to secondary providers');
       }
     }
 
-    // Try HuggingFace
-    if (!this.circuitOpen && !config.huggingface.useFallback && config.huggingface.apiKey) {
+    // 1. Try OpenRouter (Primary and Fallback)
+    if (!this.circuitOpen && !config.openrouter.useFallback && config.openrouter.apiKey) {
+      try {
+        resultText = await this.attemptOpenRouter(prompt, config.openrouter.primaryModel, 0);
+      } catch (err) {
+        logger.warn(`OpenRouter primary model (${config.openrouter.primaryModel}) failed, attempting OpenRouter fallback (${config.openrouter.fallbackModel})`, { message: err.message });
+        try {
+          resultText = await this.attemptOpenRouter(prompt, config.openrouter.fallbackModel, 0);
+        } catch (fallbackErr) {
+          logger.warn('OpenRouter fallback model failed, moving to HuggingFace', { message: fallbackErr.message });
+        }
+      }
+    }
+
+    // 2. Try HuggingFace (Qwen)
+    if (!resultText && !this.circuitOpen && !config.huggingface.useFallback && config.huggingface.apiKey) {
       try {
         resultText = await this.attemptHuggingFace(prompt, 0);
       } catch (err) {
@@ -47,7 +61,7 @@ class AiService {
       }
     }
 
-    // Try Groq fallback
+    // 3. Try Groq fallback
     if (!resultText && process.env.GROQ_API_KEY) {
       try {
         resultText = await this.attemptGroq(prompt);
@@ -56,7 +70,7 @@ class AiService {
       }
     }
 
-    // Try OpenAI fallback
+    // 4. Try OpenAI fallback
     if (!resultText && process.env.OPENAI_API_KEY) {
       try {
         resultText = await this.attemptOpenAI(prompt);
@@ -65,7 +79,7 @@ class AiService {
       }
     }
 
-    // Final Hardcoded fallback
+    // 5. Final Hardcoded fallback
     if (!resultText) {
       logger.warn('All AI API providers failed or are unconfigured — returning template fallback');
       resultText = this.getFallbackResponse(prompt);
@@ -102,51 +116,32 @@ class AiService {
 
     let buffer = '';
 
-    if (!config.huggingface.useFallback && config.huggingface.apiKey) {
+    // 1. Try OpenRouter (Primary and Fallback) for streaming
+    if (!config.openrouter.useFallback && config.openrouter.apiKey) {
       try {
-        const response = await axios.post(
-          `https://api-inference.huggingface.co/models/${config.huggingface.model}`,
-          {
-            inputs: prompt,
-            parameters: {
-              max_new_tokens: AI.MAX_TOKENS,
-              temperature: AI.TEMPERATURE,
-              top_p: AI.TOP_P,
-              do_sample: true,
-              return_full_text: false,
-            },
-            stream: true,
-          },
-          {
-            headers: {
-              Authorization: `Bearer ${config.huggingface.apiKey}`,
-              'Content-Type': 'application/json',
-            },
-            responseType: 'stream',
-            timeout: AI.TIMEOUT_MS,
-          }
-        );
-
-        for await (const chunk of response.data) {
-          const lines = chunk.toString().split('\n');
-          for (const line of lines) {
-            if (line.trim().startsWith('data:')) {
-              try {
-                const parsed = JSON.parse(line.trim().slice(5));
-                const token = parsed.token?.text || '';
-                onToken(token);
-                buffer += token;
-              } catch (e) {
-                // Ignore chunk parsing errors
-              }
-            }
-          }
+        logger.info(`Attempting OpenRouter stream with primary model: ${config.openrouter.primaryModel}`);
+        buffer = await this.attemptOpenRouterStream(prompt, config.openrouter.primaryModel, onToken);
+      } catch (err) {
+        logger.warn(`OpenRouter primary stream failed: ${err.message}. Trying fallback model stream: ${config.openrouter.fallbackModel}`);
+        try {
+          buffer = await this.attemptOpenRouterStream(prompt, config.openrouter.fallbackModel, onToken);
+        } catch (fallbackErr) {
+          logger.warn(`OpenRouter fallback stream failed: ${fallbackErr.message}. Trying HuggingFace stream.`);
         }
+      }
+    }
+
+    // 2. Try Hugging Face stream
+    if (!buffer.trim() && !config.huggingface.useFallback && config.huggingface.apiKey) {
+      try {
+        logger.info(`Attempting HuggingFace stream with model: ${config.huggingface.model}`);
+        buffer = await this.attemptHuggingFaceStream(prompt, onToken);
       } catch (err) {
         logger.warn('Hugging Face stream failed, falling back to simulated stream', { message: err.message });
       }
     }
 
+    // 3. Simulated Stream Fallback
     if (!buffer.trim()) {
       const fallbackText = this.getFallbackResponse(prompt);
       const words = fallbackText.split(' ');
@@ -159,23 +154,153 @@ class AiService {
     }
   }
 
+  async attemptOpenRouter(prompt, modelName, attempt) {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), AI.TIMEOUT_MS);
+
+    const payload = {
+      model: modelName,
+      messages: [{ role: 'user', content: prompt }],
+      max_tokens: AI.MAX_TOKENS,
+      temperature: AI.TEMPERATURE,
+      top_p: AI.TOP_P,
+    };
+    logger.info(`OpenRouter Final Prompt before sending request for model ${modelName}:`, { prompt });
+
+    try {
+      const response = await axios.post(
+        'https://openrouter.ai/api/v1/chat/completions',
+        payload,
+        {
+          headers: {
+            Authorization: `Bearer ${config.openrouter.apiKey}`,
+            'Content-Type': 'application/json',
+            'HTTP-Referer': 'https://career-docs-ai.local',
+            'X-Title': 'Career Docs AI',
+          },
+          signal: controller.signal,
+          timeout: AI.TIMEOUT_MS,
+        }
+      );
+
+      clearTimeout(timeoutId);
+      this.failureCount = 0;
+      return response.data?.choices?.[0]?.message?.content?.trim() || '';
+    } catch (error) {
+      clearTimeout(timeoutId);
+      this.failureCount += 1;
+
+      const isRateLimited = error.response?.status === 429 || error.response?.status === 503;
+      const isTimeout = error.code === 'ECONNABORTED' || error.name === 'AbortError';
+
+      if ((isRateLimited || isTimeout) && attempt < AI.MAX_RETRIES) {
+        const delay = AI.RETRY_BASE_DELAY_MS * Math.pow(2, attempt) + Math.random() * 1000;
+        logger.warn(`AI OpenRouter failure (attempt ${attempt + 1}/${AI.MAX_RETRIES}), retrying in ${Math.round(delay)}ms`);
+        await new Promise(r => setTimeout(r, delay));
+        return this.attemptOpenRouter(prompt, modelName, attempt + 1);
+      }
+
+      if (this.failureCount >= this.MAX_FAILURES) {
+        this.circuitOpen = true;
+        this.circuitResetAt = Date.now() + this.CIRCUIT_RESET_MS;
+        logger.error('OpenRouter circuit breaker opened due to successive failures');
+      }
+
+      throw error;
+    }
+  }
+
+  async attemptOpenRouterStream(prompt, modelName, onToken) {
+    const payload = {
+      model: modelName,
+      messages: [{ role: 'user', content: prompt }],
+      max_tokens: AI.MAX_TOKENS,
+      temperature: AI.TEMPERATURE,
+      top_p: AI.TOP_P,
+      stream: true,
+    };
+    logger.info(`OpenRouter Final Prompt before sending stream request for model ${modelName}:`, { prompt });
+
+    const response = await axios.post(
+      'https://openrouter.ai/api/v1/chat/completions',
+      payload,
+      {
+        headers: {
+          Authorization: `Bearer ${config.openrouter.apiKey}`,
+          'Content-Type': 'application/json',
+          'HTTP-Referer': 'https://career-docs-ai.local',
+          'X-Title': 'Career Docs AI',
+        },
+        responseType: 'stream',
+        timeout: AI.TIMEOUT_MS,
+      }
+    );
+
+    let buffer = '';
+    let chunkBuffer = '';
+
+    for await (const chunk of response.data) {
+      chunkBuffer += chunk.toString();
+      const lines = chunkBuffer.split('\n');
+      chunkBuffer = lines.pop();
+
+      for (const line of lines) {
+        const trimmed = line.trim();
+        if (!trimmed) continue;
+        if (trimmed === 'data: [DONE]') continue;
+        if (trimmed.startsWith('data:')) {
+          try {
+            const dataText = trimmed.slice(5).trim();
+            const parsed = JSON.parse(dataText);
+            const token = parsed.choices?.[0]?.delta?.content || '';
+            if (token) {
+              onToken(token);
+              buffer += token;
+            }
+          } catch (e) {
+            // Ignore incomplete line parse errors
+          }
+        }
+      }
+    }
+
+    if (chunkBuffer.trim().startsWith('data:')) {
+      try {
+        const dataText = chunkBuffer.trim().slice(5).trim();
+        if (dataText !== '[DONE]') {
+          const parsed = JSON.parse(dataText);
+          const token = parsed.choices?.[0]?.delta?.content || '';
+          if (token) {
+            onToken(token);
+            buffer += token;
+          }
+        }
+      } catch (e) {}
+    }
+
+    return buffer;
+  }
+
   async attemptHuggingFace(prompt, attempt) {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), AI.TIMEOUT_MS);
 
+    const payload = {
+      inputs: prompt,
+      parameters: {
+        max_new_tokens: AI.MAX_TOKENS,
+        temperature: AI.TEMPERATURE,
+        top_p: AI.TOP_P,
+        do_sample: true,
+        return_full_text: false,
+      },
+    };
+    logger.info('Hugging Face Final Prompt before sending request:', { prompt });
+
     try {
       const response = await axios.post(
         `https://api-inference.huggingface.co/models/${config.huggingface.model}`,
-        {
-          inputs: prompt,
-          parameters: {
-            max_new_tokens: AI.MAX_TOKENS,
-            temperature: AI.TEMPERATURE,
-            top_p: AI.TOP_P,
-            do_sample: true,
-            return_full_text: false,
-          },
-        },
+        payload,
         {
           headers: {
             Authorization: `Bearer ${config.huggingface.apiKey}`,
@@ -211,6 +336,52 @@ class AiService {
 
       throw error;
     }
+  }
+
+  async attemptHuggingFaceStream(prompt, onToken) {
+    const payload = {
+      inputs: prompt,
+      parameters: {
+        max_new_tokens: AI.MAX_TOKENS,
+        temperature: AI.TEMPERATURE,
+        top_p: AI.TOP_P,
+        do_sample: true,
+        return_full_text: false,
+      },
+      stream: true,
+    };
+    logger.info('Hugging Face Final Prompt before sending stream request:', { prompt });
+
+    const response = await axios.post(
+      `https://api-inference.huggingface.co/models/${config.huggingface.model}`,
+      payload,
+      {
+        headers: {
+          Authorization: `Bearer ${config.huggingface.apiKey}`,
+          'Content-Type': 'application/json',
+        },
+        responseType: 'stream',
+        timeout: AI.TIMEOUT_MS,
+      }
+    );
+
+    let buffer = '';
+    for await (const chunk of response.data) {
+      const lines = chunk.toString().split('\n');
+      for (const line of lines) {
+        if (line.trim().startsWith('data:')) {
+          try {
+            const parsed = JSON.parse(line.trim().slice(5));
+            const token = parsed.token?.text || '';
+            onToken(token);
+            buffer += token;
+          } catch (e) {
+            // Ignore incomplete line parse errors
+          }
+        }
+      }
+    }
+    return buffer;
   }
 
   async attemptGroq(prompt) {
