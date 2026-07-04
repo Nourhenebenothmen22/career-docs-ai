@@ -91,9 +91,10 @@ Docker Compose orchestrates the full system (Redis, MinIO, Backend, and Frontend
    docker compose up -d
    ```
 3. **Access the application:**
-   * **Frontend Application**: [http://localhost](http://localhost) (Port 80)
-   * **Backend REST API**: [http://localhost:5000](http://localhost:5000)
-   * **MinIO Console**: [http://localhost:9001](http://localhost:9001)
+   * **Frontend Application**: [http://localhost:3001](http://localhost:3001)
+   * **Backend REST API**: [http://localhost:5001](http://localhost:5001)
+   * **MinIO Console**: [http://localhost:9003](http://localhost:9003)
+   * **MinIO API**: [http://localhost:9002](http://localhost:9002)
 
 4. **Shutdown services:**
    ```bash
