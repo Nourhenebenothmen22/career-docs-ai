@@ -2,10 +2,6 @@ import { create } from 'zustand';
 import axios from 'axios';
 
 const useAppStore = create((set) => ({
-  sidebarOpen: true,
-  setSidebarOpen: (open) => set({ sidebarOpen: open }),
-  toggleSidebar: () => set((state) => ({ sidebarOpen: !state.sidebarOpen })),
-
   toasts: [],
   addToast: (message, type = 'info') => {
     const id = Math.random().toString(36).substring(2, 9);
@@ -21,9 +17,6 @@ const useAppStore = create((set) => ({
   removeToast: (id) => set((state) => ({
     toasts: state.toasts.filter((t) => t.id !== id),
   })),
-
-  stats: { total: 0, motivation: 0, recommendation: 0 },
-  setStats: (stats) => set({ stats }),
 
   generating: false,
   setGenerating: (generating) => set({ generating }),
