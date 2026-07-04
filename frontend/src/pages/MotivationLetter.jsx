@@ -73,8 +73,9 @@ export default function MotivationLetter() {
       setModalOpen(true);
       addToast(t('toast.generatedSuccess'), 'success');
     } catch (e) {
-      setErrors({ api: e.message || t('common.error') });
-      addToast(t('toast.generationFailed'), 'error');
+      const msg = e.message || t('common.error');
+      setErrors({ api: msg });
+      addToast(msg, 'error');
     } finally {
       setGenerating(false);
     }
