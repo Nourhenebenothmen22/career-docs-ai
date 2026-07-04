@@ -1,11 +1,12 @@
 const Document = require('../models/Document');
 
 class HistoryService {
-  async getAll(page = 1, limit = 20) {
+  async getAll(userId, page = 1, limit = 20) {
+    const query = { userId };
     const skip = (page - 1) * limit;
     const [docs, total] = await Promise.all([
-      Document.find().sort({ createdAt: -1 }).skip(skip).limit(limit).lean(),
-      Document.countDocuments(),
+      Document.find(query).sort({ createdAt: -1 }).skip(skip).limit(limit).lean(),
+      Document.countDocuments(query),
     ]);
     return {
       documents: docs.map(d => ({
@@ -22,8 +23,8 @@ class HistoryService {
     };
   }
 
-  async getById(id) {
-    const doc = await Document.findById(id).lean();
+  async getById(id, userId) {
+    const doc = await Document.findOne({ _id: id, userId }).lean();
     if (!doc) return null;
     return {
       id: doc._id,
@@ -35,8 +36,8 @@ class HistoryService {
     };
   }
 
-  async delete(id) {
-    const doc = await Document.findByIdAndDelete(id);
+  async delete(id, userId) {
+    const doc = await Document.findOneAndDelete({ _id: id, userId });
     return !!doc;
   }
 }

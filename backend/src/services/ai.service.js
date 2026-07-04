@@ -1,7 +1,9 @@
 const axios = require('axios');
+const crypto = require('crypto');
 const config = require('../config');
 const { AI } = require('../utils/constants');
 const logger = require('../utils/logger');
+const cacheService = require('./cache.service');
 
 class AiService {
   constructor() {
@@ -13,25 +15,151 @@ class AiService {
   }
 
   async generate(prompt) {
-    if (config.huggingface.useFallback) {
-      return this.getFallbackResponse(prompt);
+    if (!prompt) return this.defaultMotivation();
+
+    // Redis Caching
+    const hash = crypto.createHash('sha256').update(prompt).digest('hex');
+    const cacheKey = `ai:prompt:${hash}`;
+    const cachedResponse = await cacheService.get(cacheKey);
+    if (cachedResponse) {
+      logger.info('Cache hit for AI prompt');
+      return cachedResponse;
     }
+
+    let resultText = '';
 
     if (this.circuitOpen) {
       if (Date.now() > this.circuitResetAt) {
         this.circuitOpen = false;
         this.failureCount = 0;
-        logger.info('Circuit breaker reset — retrying AI API');
+        logger.info('Circuit breaker reset — retrying primary AI API');
       } else {
-        logger.warn('Circuit breaker open — using fallback');
-        return this.getFallbackResponse(prompt);
+        logger.warn('Circuit breaker open — falling back to secondary providers');
       }
     }
 
-    return this.attemptRequest(prompt, 0);
+    // Try HuggingFace
+    if (!this.circuitOpen && !config.huggingface.useFallback && config.huggingface.apiKey) {
+      try {
+        resultText = await this.attemptHuggingFace(prompt, 0);
+      } catch (err) {
+        logger.warn('Hugging Face failed, attempting Groq fallback', { message: err.message });
+      }
+    }
+
+    // Try Groq fallback
+    if (!resultText && process.env.GROQ_API_KEY) {
+      try {
+        resultText = await this.attemptGroq(prompt);
+      } catch (err) {
+        logger.warn('Groq fallback failed, attempting OpenAI fallback', { message: err.message });
+      }
+    }
+
+    // Try OpenAI fallback
+    if (!resultText && process.env.OPENAI_API_KEY) {
+      try {
+        resultText = await this.attemptOpenAI(prompt);
+      } catch (err) {
+        logger.warn('OpenAI fallback failed', { message: err.message });
+      }
+    }
+
+    // Final Hardcoded fallback
+    if (!resultText) {
+      logger.warn('All AI API providers failed or are unconfigured — returning template fallback');
+      resultText = this.getFallbackResponse(prompt);
+    } else {
+      // Cache response for 1 hour
+      await cacheService.set(cacheKey, resultText, 3600);
+    }
+
+    return resultText;
   }
 
-  async attemptRequest(prompt, attempt) {
+  async generateStream(prompt, onToken) {
+    if (!prompt) {
+      const fallback = this.defaultMotivation();
+      for (const word of fallback.split(' ')) {
+        onToken(word + ' ');
+        await new Promise(r => setTimeout(r, 20));
+      }
+      return;
+    }
+
+    const hash = crypto.createHash('sha256').update(prompt).digest('hex');
+    const cacheKey = `ai:prompt:${hash}`;
+    const cachedResponse = await cacheService.get(cacheKey);
+    if (cachedResponse) {
+      logger.info('Cache hit for AI stream');
+      const words = cachedResponse.split(' ');
+      for (const word of words) {
+        onToken(word + ' ');
+        await new Promise(r => setTimeout(r, 15));
+      }
+      return;
+    }
+
+    let buffer = '';
+
+    if (!config.huggingface.useFallback && config.huggingface.apiKey) {
+      try {
+        const response = await axios.post(
+          `https://api-inference.huggingface.co/models/${config.huggingface.model}`,
+          {
+            inputs: prompt,
+            parameters: {
+              max_new_tokens: AI.MAX_TOKENS,
+              temperature: AI.TEMPERATURE,
+              top_p: AI.TOP_P,
+              do_sample: true,
+              return_full_text: false,
+            },
+            stream: true,
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${config.huggingface.apiKey}`,
+              'Content-Type': 'application/json',
+            },
+            responseType: 'stream',
+            timeout: AI.TIMEOUT_MS,
+          }
+        );
+
+        for await (const chunk of response.data) {
+          const lines = chunk.toString().split('\n');
+          for (const line of lines) {
+            if (line.trim().startsWith('data:')) {
+              try {
+                const parsed = JSON.parse(line.trim().slice(5));
+                const token = parsed.token?.text || '';
+                onToken(token);
+                buffer += token;
+              } catch (e) {
+                // Ignore chunk parsing errors
+              }
+            }
+          }
+        }
+      } catch (err) {
+        logger.warn('Hugging Face stream failed, falling back to simulated stream', { message: err.message });
+      }
+    }
+
+    if (!buffer.trim()) {
+      const fallbackText = this.getFallbackResponse(prompt);
+      const words = fallbackText.split(' ');
+      for (const word of words) {
+        onToken(word + ' ');
+        await new Promise(r => setTimeout(r, 25));
+      }
+    } else {
+      await cacheService.set(cacheKey, buffer.trim(), 3600);
+    }
+  }
+
+  async attemptHuggingFace(prompt, attempt) {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), AI.TIMEOUT_MS);
 
@@ -61,7 +189,6 @@ class AiService {
       clearTimeout(timeoutId);
       this.failureCount = 0;
       return this.extractText(response.data);
-
     } catch (error) {
       clearTimeout(timeoutId);
       this.failureCount += 1;
@@ -71,25 +198,59 @@ class AiService {
 
       if ((isRateLimited || isTimeout) && attempt < AI.MAX_RETRIES) {
         const delay = AI.RETRY_BASE_DELAY_MS * Math.pow(2, attempt) + Math.random() * 1000;
-        logger.warn(`AI ${isTimeout ? 'timeout' : 'rate limited'} (attempt ${attempt + 1}/${AI.MAX_RETRIES}), retrying in ${Math.round(delay)}ms`);
+        logger.warn(`AI Hugging Face failure (attempt ${attempt + 1}/${AI.MAX_RETRIES}), retrying in ${Math.round(delay)}ms`);
         await new Promise(r => setTimeout(r, delay));
-        return this.attemptRequest(prompt, attempt + 1);
+        return this.attemptHuggingFace(prompt, attempt + 1);
       }
 
       if (this.failureCount >= this.MAX_FAILURES) {
         this.circuitOpen = true;
         this.circuitResetAt = Date.now() + this.CIRCUIT_RESET_MS;
-        logger.error('Circuit breaker opened — too many AI API failures');
+        logger.error('Hugging Face circuit breaker opened due to successive failures');
       }
 
-      logger.error('AI API request failed', {
-        status: error.response?.status,
-        message: error.message,
-        attempts: attempt + 1,
-      });
-
-      return this.getFallbackResponse(prompt);
+      throw error;
     }
+  }
+
+  async attemptGroq(prompt) {
+    const response = await axios.post(
+      'https://api.groq.com/openai/v1/chat/completions',
+      {
+        model: 'mixtral-8x7b-32768',
+        messages: [{ role: 'user', content: prompt }],
+        max_tokens: AI.MAX_TOKENS,
+        temperature: AI.TEMPERATURE,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${process.env.GROQ_API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        timeout: 15000,
+      }
+    );
+    return response.data?.choices?.[0]?.message?.content?.trim() || '';
+  }
+
+  async attemptOpenAI(prompt) {
+    const response = await axios.post(
+      'https://api.openai.com/v1/chat/completions',
+      {
+        model: 'gpt-4o-mini',
+        messages: [{ role: 'user', content: prompt }],
+        max_tokens: AI.MAX_TOKENS,
+        temperature: AI.TEMPERATURE,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        timeout: 15000,
+      }
+    );
+    return response.data?.choices?.[0]?.message?.content?.trim() || '';
   }
 
   extractText(data) {
