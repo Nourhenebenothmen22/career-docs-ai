@@ -32,6 +32,7 @@ export default function MotivationLetter() {
   const generating = useAppStore(s => s.generating);
   const setGenerating = useAppStore(s => s.setGenerating);
   const addToast = useAppStore(s => s.addToast);
+  const user = useAppStore(s => s.user);
 
   const progress = useMemo(() => {
     const filled = requiredFields.filter(f => formData[f]?.trim()).length;
@@ -109,26 +110,28 @@ export default function MotivationLetter() {
   return (
     <div className="min-h-screen bg-gray-50" dir={isRtl ? 'rtl' : 'ltr'}>
       {/* Header */}
-      <header className="sticky top-0 z-30 border-b bg-white/80 backdrop-blur-lg">
-        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center gap-4">
-            <button
-              onClick={() => navigate('/')}
-              className="flex h-9 w-9 items-center justify-center rounded-button text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
-              aria-label={t('common.back')}
-            >
-              <ArrowLeftIcon className="h-5 w-5" aria-hidden="true" />
-            </button>
-            <div className="flex items-center gap-3">
-              <img src="/logo-risalatech.png" alt="RISALATECH" className="h-8 w-auto" />
-              <span className="text-caption font-bold text-gray-900">{t('app.name')}</span>
-              <span className="mx-2 text-gray-300" aria-hidden="true">/</span>
-              <span className="text-caption font-medium text-gray-500">{t('motivation.title')}</span>
+      {!user && (
+        <header className="sticky top-0 z-30 border-b bg-white/80 backdrop-blur-lg">
+          <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
+            <div className="flex items-center gap-4">
+              <button
+                onClick={() => navigate('/')}
+                className="flex h-9 w-9 items-center justify-center rounded-button text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
+                aria-label={t('common.back')}
+              >
+                <ArrowLeftIcon className="h-5 w-5" aria-hidden="true" />
+              </button>
+              <div className="flex items-center gap-3">
+                <img src="/logo-risalatech.png" alt="RISALATECH" className="h-8 w-auto" />
+                <span className="text-caption font-bold text-gray-900">{t('app.name')}</span>
+                <span className="mx-2 text-gray-300" aria-hidden="true">/</span>
+                <span className="text-caption font-medium text-gray-500">{t('motivation.title')}</span>
+              </div>
             </div>
+            <LanguageSwitcher />
           </div>
-          <LanguageSwitcher />
-        </div>
-      </header>
+        </header>
+      )}
 
       {/* Progress Bar */}
       <div className="border-b bg-white">
