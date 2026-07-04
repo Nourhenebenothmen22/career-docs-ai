@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import useAppStore from '../store/useAppStore';
 import { authApi } from '../services/api';
@@ -10,8 +10,11 @@ import Card from '../components/ui/Card';
 export default function Register() {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const location = useLocation();
   const setAuth = useAppStore(s => s.setAuth);
   const addToast = useAppStore(s => s.addToast);
+
+  const from = location.state?.from?.pathname || '/motivation-letter';
 
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -33,7 +36,7 @@ export default function Register() {
       const res = await authApi.register(name, email, password);
       setAuth(res.data.user, res.data.accessToken);
       addToast('Account created successfully!', 'success');
-      navigate('/motivation-letter');
+      navigate(from, { replace: true });
     } catch (err) {
       setError(err.message || 'Registration failed');
       addToast(err.message || 'Registration failed', 'error');
@@ -100,7 +103,7 @@ export default function Register() {
 
         <div className="mt-6 text-center text-sm text-gray-600">
           Already have an account?{' '}
-          <Link to="/login" className="font-semibold text-primary-600 hover:text-primary-700 transition-colors">
+          <Link to="/login" state={{ from: location.state?.from }} className="font-semibold text-primary-600 hover:text-primary-700 transition-colors">
             Sign in
           </Link>
         </div>
