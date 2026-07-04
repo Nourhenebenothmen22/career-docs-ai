@@ -1,19 +1,17 @@
 import { lazy, Suspense, useEffect } from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, Outlet } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import './i18n';
 import ErrorBoundary from './components/ErrorBoundary';
 import ToastContainer from './components/ui/Toast';
 import useAppStore from './store/useAppStore';
+import Header from './components/layout/Header';
 
 const Landing = lazy(() => import('./pages/Landing'));
 const Login = lazy(() => import('./pages/Login'));
 const Register = lazy(() => import('./pages/Register'));
-const Dashboard = lazy(() => import('./pages/Dashboard'));
-const History = lazy(() => import('./pages/History'));
 const MotivationLetter = lazy(() => import('./pages/MotivationLetter'));
 const RecommendationLetter = lazy(() => import('./pages/RecommendationLetter'));
-const Layout = lazy(() => import('./components/layout/Layout'));
 
 function PageLoader() {
   return (
@@ -33,6 +31,21 @@ function ProtectedRoute({ children }) {
   return token ? children : <Navigate to="/login" replace />;
 }
 
+function AuthLayoutWrapper() {
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <Header />
+      <main className="flex-1">
+        <Outlet />
+      </main>
+    </div>
+  );
+}
+
+function RootRedirector() {
+  return <Landing />;
+}
+
 function AppContent() {
   const { i18n } = useTranslation();
 
@@ -46,15 +59,12 @@ function AppContent() {
     <ErrorBoundary>
       <BrowserRouter>
         <Routes>
-          {/* Public Routes */}
-          <Route path="/" element={<Suspense fallback={<PageLoader />}><Landing /></Suspense>} />
           <Route path="/login" element={<Suspense fallback={<PageLoader />}><Login /></Suspense>} />
           <Route path="/register" element={<Suspense fallback={<PageLoader />}><Register /></Suspense>} />
 
-          {/* Protected Shell Layout Routes */}
-          <Route element={<ProtectedRoute><Suspense fallback={<PageLoader />}><Layout /></Suspense></ProtectedRoute>}>
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/history" element={<History />} />
+          <Route path="/" element={<RootRedirector />} />
+
+          <Route element={<ProtectedRoute><Suspense fallback={<PageLoader />}><AuthLayoutWrapper /></Suspense></ProtectedRoute>}>
             <Route path="/motivation-letter" element={<MotivationLetter />} />
             <Route path="/recommendation-letter" element={<RecommendationLetter />} />
           </Route>

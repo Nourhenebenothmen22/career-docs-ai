@@ -33,7 +33,7 @@ export default function Register() {
       const res = await authApi.register(name, email, password);
       setAuth(res.data.user, res.data.accessToken);
       addToast('Account created successfully!', 'success');
-      navigate('/dashboard');
+      navigate('/motivation-letter');
     } catch (err) {
       setError(err.message || 'Registration failed');
       addToast(err.message || 'Registration failed', 'error');

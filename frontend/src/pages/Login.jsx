@@ -32,7 +32,7 @@ export default function Login() {
       const res = await authApi.login(email, password);
       setAuth(res.data.user, res.data.accessToken);
       addToast('Welcome back!', 'success');
-      navigate('/dashboard');
+      navigate('/motivation-letter');
     } catch (err) {
       setError(err.message || 'Login failed');
       addToast(err.message || 'Login failed', 'error');
