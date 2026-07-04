@@ -4,6 +4,9 @@ export function validateMotivation(formData, t) {
   fields.forEach(f => {
     if (!formData[f]?.trim()) errs[f] = t('motivation.required');
   });
+  if (formData.email?.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email.trim())) {
+    errs.email = t('motivation.invalidEmail');
+  }
   return errs;
 }
 
