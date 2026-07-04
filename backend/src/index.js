@@ -10,8 +10,6 @@ const requestLogger = require('./middleware/requestLogger');
 const authRoutes = require('./routes/auth.routes');
 const motivationRoutes = require('./routes/motivation.routes');
 const recommendationRoutes = require('./routes/recommendation.routes');
-const historyRoutes = require('./routes/history.routes');
-const gdprRoutes = require('./routes/gdpr.routes');
 const logger = require('./utils/logger');
 const { isRedisEnabled } = require('./config/redis');
 const { isStorageEnabled } = require('./config/storage');
@@ -49,8 +47,6 @@ app.get('/api/health', (_, res) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/motivation', motivationRoutes);
 app.use('/api/recommendation', recommendationRoutes);
-app.use('/api/history', historyRoutes);
-app.use('/api/gdpr', gdprRoutes);
 
 app.use(notFoundHandler);
 app.use(errorHandler);
