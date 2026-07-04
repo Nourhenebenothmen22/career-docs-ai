@@ -1,29 +1,53 @@
 import { create } from 'zustand';
+import axios from 'axios';
 
-const useAppStore = create((set, get) => ({
-  // Sidebar
+const useAppStore = create((set) => ({
   sidebarOpen: true,
-  toggleSidebar: () => set(s => ({ sidebarOpen: !s.sidebarOpen })),
   setSidebarOpen: (open) => set({ sidebarOpen: open }),
+  toggleSidebar: () => set((state) => ({ sidebarOpen: !state.sidebarOpen })),
 
-  // Toast notifications
   toasts: [],
-  addToast: (message, type = 'success', duration = 4000) => {
-    const id = Date.now() + Math.random();
-    set(s => ({ toasts: [...s.toasts, { id, message, type }] }));
+  addToast: (message, type = 'info') => {
+    const id = Math.random().toString(36).substring(2, 9);
+    set((state) => ({
+      toasts: [...state.toasts, { id, message, type }],
+    }));
     setTimeout(() => {
-      set(s => ({ toasts: s.toasts.filter(t => t.id !== id) }));
-    }, duration);
+      set((state) => ({
+        toasts: state.toasts.filter((t) => t.id !== id),
+      }));
+    }, 4000);
   },
-  removeToast: (id) => set(s => ({ toasts: s.toasts.filter(t => t.id !== id) })),
+  removeToast: (id) => set((state) => ({
+    toasts: state.toasts.filter((t) => t.id !== id),
+  })),
 
-  // Document stats
   stats: { total: 0, motivation: 0, recommendation: 0 },
   setStats: (stats) => set({ stats }),
 
-  // Generation loading state
   generating: false,
-  setGenerating: (val) => set({ generating: val }),
+  setGenerating: (generating) => set({ generating }),
+
+  // Auth State
+  user: localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user')) : null,
+  token: localStorage.getItem('token') || null,
+  setAuth: (user, token) => {
+    if (user) localStorage.setItem('user', JSON.stringify(user));
+    else localStorage.removeItem('user');
+    if (token) localStorage.setItem('token', token);
+    else localStorage.removeItem('token');
+    set({ user, token });
+  },
+  logout: async () => {
+    try {
+      await axios.post('/api/auth/logout');
+    } catch (e) {
+      // Ignore logging out request failure
+    }
+    localStorage.removeItem('user');
+    localStorage.removeItem('token');
+    set({ user: null, token: null });
+  }
 }));
 
 export default useAppStore;
