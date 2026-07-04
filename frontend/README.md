@@ -70,7 +70,7 @@ The frontend implements a silent token rotation mechanism.
    ```bash
    npm run dev
    ```
-   *The application will boot on [http://localhost:3000](http://localhost:3000) and proxy API requests automatically to [http://localhost:5000/api](http://localhost:5000/api).*
+   *The application will boot on [http://localhost:3000](http://localhost:3000) and proxy API requests automatically to [http://localhost:5000/api](http://localhost:5000/api) (Local dev mode). When deployed via Docker Compose, it is served on [http://localhost:3001](http://localhost:3001) proxying to [http://localhost:5001](http://localhost:5001).*
 
 3. **Build for production:**
    ```bash
