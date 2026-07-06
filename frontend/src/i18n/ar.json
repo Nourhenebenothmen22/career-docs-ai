@@ -156,6 +156,9 @@
   "recommendation": {
     "title": "خطاب التوصية",
     "subtitle": "قم بإنشاء خطاب توصية احترافي لزميل أو عضو فريق.",
+    "collaborationContext": "Relation avec le Candidat",
+    "skillsAndAchievements": "Compétences Observées",
+    "softSkills": "Soft Skills",
     "recommenderInfo": "معلومات الموصي",
     "recommenderInfoDesc": "تفاصيلك ككاتب التوصية",
     "candidateInfo": "معلومات المرشح",
