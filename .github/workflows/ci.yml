@@ -3,7 +3,6 @@ name: CI/CD Build & Verification
 on:
   push:
     branches:
-      - main
       - '*'
   pull_request:
     branches:
@@ -62,6 +61,8 @@ jobs:
           file: ./backend/Dockerfile
           push: false
           tags: risalatech-backend:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
       - name: Build Frontend Docker Image
         uses: docker/build-push-action@v5
@@ -70,3 +71,5 @@ jobs:
           file: ./frontend/Dockerfile
           push: false
           tags: risalatech-frontend:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
