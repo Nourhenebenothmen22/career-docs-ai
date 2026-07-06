@@ -85,118 +85,82 @@ Generate the final letter now. Output ONLY the letter text starting from candida
     } = data;
     const languageVal = (language || 'EN').toUpperCase();
     const lang = languageVal === 'FR' ? 'French' : languageVal === 'AR' ? 'Arabic' : 'English';
-    
-    const dateStr = languageVal === 'FR' 
+
+    const dateStr = languageVal === 'FR'
       ? new Date().toLocaleDateString('fr-FR', { year: 'numeric', month: 'long', day: 'numeric' })
       : languageVal === 'AR'
       ? new Date().toLocaleDateString('ar-EG', { year: 'numeric', month: 'long', day: 'numeric' })
       : new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
 
-    const salutation = languageVal === 'FR' ? 'Madame, Monsieur,' : languageVal === 'AR' ? 'إلى من يهمه الأمر،' : 'To Whom It May Concern,';
+    const salutation = languageVal === 'FR' ? 'Madame, Monsieur,' : languageVal === 'AR' ? 'السيد/السيدة المحترم(ة)،' : 'To Whom It May Concern,';
     const signOff = languageVal === 'FR' ? 'Cordialement,' : languageVal === 'AR' ? 'مع خالص التقدير،' : 'Sincerely,';
 
-    let section1 = 'Relationship with the Candidate';
-    let section2 = 'Observed Skills';
-    let section3 = 'Soft Skills';
+    const subjectLabel = languageVal === 'FR'
+      ? 'Objet : Lettre de recommandation pour'
+      : languageVal === 'AR'
+      ? 'الموضوع: رسالة توصية لـ'
+      : 'Subject: Recommendation Letter for';
 
-    let labelRel = 'Relationship';
-    let labelDur = 'Duration';
-    let labelSkills = 'Observed Skills';
-    let labelAch = 'Key Achievements';
-    let labelQual = 'Soft Skills';
+    const skillsText = skillsObserved && skillsObserved.length > 0 ? skillsObserved.join(', ') : '(None provided)';
 
-    if (languageVal === 'FR') {
-      section1 = 'Relation avec le Candidat';
-      section2 = 'Compétences Observées';
-      section3 = 'Compétences comportementales';
-      labelRel = 'Relation avec le Candidat';
-      labelDur = 'Durée';
-      labelSkills = 'Compétences Observées';
-      labelAch = 'Réalisations Clés';
-      labelQual = 'Compétences comportementales';
-    } else if (languageVal === 'AR') {
-      section1 = 'علاقة مع المترشح';
-      section2 = 'المهارات الملاحظة';
-      section3 = 'المهارات الشخصية';
-      labelRel = 'العلاقة';
-      labelDur = 'المدة';
-      labelSkills = 'المهارات الملاحظة';
-      labelAch = 'الإنجازات الرئيسية';
-      labelQual = 'المهارات الشخصية';
-    }
+    const qualitiesText = [
+      communicationEvidence ? `Communication: ${communicationEvidence}` : null,
+      problemSolvingEvidence ? `Problem-solving: ${problemSolvingEvidence}` : null,
+      ownershipEvidence ? `Ownership & Autonomy: ${ownershipEvidence}` : null,
+    ].filter(Boolean).join('\n');
 
-    return `You are a Senior AI Systems Designer and Prompt Engineer specializing in dynamic, non-hardcoded HR recommendation letters. Write a formal recommendation letter in plain text format that is fully driven by the provided input fields with ZERO hardcoded content or static templates.
+    const projectsText = [
+      projectName ? `Project: ${projectName}` : null,
+      projectType ? `Type: ${projectType}` : null,
+      teamSize ? `Team: ${teamSize}` : null,
+      workMode ? `Mode: ${workMode}` : null,
+      keyAchievements ? `Achievements: ${keyAchievements}` : null,
+    ].filter(Boolean).join('\n');
 
-CRITICAL DYNAMIC BEHAVIOR RULES:
-- ADAPTIVE STRUCTURE: The structure and paragraph ordering must adapt dynamically based on which inputs are present. Do NOT use a fixed template, predefined filler sentences, or static section outlines.
-- MISSING FIELDS HANDLING: If an input field is empty, missing, or vague, simply skip it or reduce its weight in the final text. Do NOT fabricate, guess, or extrapolate missing details.
-- CONTEXT-AWARE EMPHASIS: Adjust the tone and paragraph emphasis according to the candidate's target role ("${candidateRole || 'the candidate'}"), seniority level, and relationship.
-- STRICT DATA GROUNDING & TRACEABILITY: Every sentence in the output MUST map directly to the provided input values. No generic HR filler, no hallucinated achievements, no invented metrics.
-- PROPORTIONAL LENGTH: If few inputs are provided, automatically produce a shorter, compact letter. If highly detailed inputs are provided, expand the descriptions proportionally.
-- LANGUAGE: The letter must be written entirely in ${lang}.
-- STRICT LENGTH CONSTRAINT: The final letter (including the header, date, body, and signature) MUST NOT exceed 280 words total, and should be at least 220 words (A4 compact format).
-- FORMAT: Output ONLY the plain text letter. No HTML, no styling, no colors, no UI elements. Do not include markdown header metadata, no JSON wrapper, and no chat conversational remarks.
-- NO TITLE OR HEADING: Do NOT write "Letter of Recommendation" or any other title at the top of the output.
-- NO BULLET POINTS/LISTS: Ensure the letter body flows as a natural, polished, cohesive multi-paragraph prose narrative. Never use bullet points, tables, or numbered lists.
+    return `You are a professional HR letter writer with 20+ years of experience. Write a formal recommendation letter in plain text format based ONLY on the provided input data. Do NOT invent any information.
 
-INPUT DATA SCHEMA:
+STRICT INSTRUCTIONS:
+- LANGUAGE: Write entirely in ${lang}.
+- LENGTH: 250-350 words total, fitting one A4 page.
+- FORMAT: Output ONLY plain text. No HTML, no markdown, no JSON, no commentary.
+- NO SECTION HEADINGS: Do NOT use numbered sections, labels, or titles in the body. Write 5 flowing prose paragraphs.
+- NO BULLET POINTS OR LISTS: Natural prose paragraphs only.
+- NO PLACEHOLDER TEXT: Every sentence must derive from the actual input data.
 
-1. Recommender:
-   - Name: ${recommenderName || '(Not provided)'}
-   - Role/Position: ${recommenderRole || '(Not provided)'}
-   - Company: ${companyName || '(Not provided)'}
+OUTPUT MUST USE EXACTLY THIS STRUCTURE:
 
-2. Candidate:
-   - Name: ${candidateName || '(Not provided)'}
-   - Role: ${candidateRole || '(Not provided)'}
-
-3. Collaboration Context & Relationship:
-   - Relationship: ${relationshipToCandidate || '(Not provided)'}
-   - Duration: ${durationWorkedTogether || '(Not provided)'}
-   - Project Name: ${projectName || '(Not provided)'}
-   - Project Type/Scope: ${projectType || '(Not provided)'}
-   - Team Size: ${teamSize || '(Not provided)'}
-   - Work Mode/Collaboration Level: ${workMode || '(Not provided)'}
-
-4. Academic & Professional Skills:
-   - Skills observed: ${skillsObserved && skillsObserved.length > 0 ? skillsObserved.join(', ') : '(None provided)'}
-
-5. Key Achievements:
-   - Details: ${keyAchievements || '(Not provided)'}
-
-6. Professional Qualities (Soft Skills):
-   - Communication: ${communicationEvidence || '(Not provided)'}
-   - Problem-solving: ${problemSolvingEvidence || '(Not provided)'}
-   - Ownership & Autonomy: ${ownershipEvidence || '(Not provided)'}
-
-LAYOUT STRUCTURE (MANDATORY EXACT POSITIONING):
-Produce the exact layout below. Align the blocks using spacing/blank spaces.
-
-[Recommender Block (Left)]                              [Candidate/Date Block (Right)]
-${recommenderName || ''}                                  Candidate: ${candidateName || ''}
-${recommenderRole || ''}                                  Role: ${candidateRole || ''}
-${companyName || ''}                                      Period: ${durationWorkedTogether || ''}
-                                                        ${dateStr}
+${subjectLabel} ${candidateName || ''}
 
 ${salutation}
 
-[Dynamic body paragraphs: construct the body paragraphs using exactly these three numbered sections:
+Paragraph 1 - Context:
+Describe the relationship between the recommender (${recommenderName || 'the recommender'}, ${recommenderRole || ''} at ${companyName || ''}) and the candidate (${candidateName || ''}). Mention the duration of collaboration (${durationWorkedTogether || ''}) and the company/department context.
 
-1. ${section1}
-Under this section, you must first output these specific field labels on their own line: "${labelRel}" and "${labelDur}". Explain them in prose. Do NOT append trailing periods (.) or colons (:) to the section titles or field labels (e.g. write "1. ${section1}" instead of "1. ${section1}." or "1. ${section1}:", and write "${labelRel}" instead of "${labelRel}." or "${labelRel}:").
+Paragraph 2 - Responsibilities:
+Describe the candidate's role (${candidateRole || ''}) and main responsibilities. Mention specific projects or achievements if provided: ${projectsText || 'No project details provided'}.
 
-2. ${section2}
-Under this section, you must first output these specific field labels on their own line: "${labelSkills}" and "${labelAch}". Explain them in prose. Do NOT append trailing periods (.) or colons (:) to the section titles or field labels.
+Paragraph 3 - Skills Evaluation:
+Evaluate the candidate's technical and professional skills: ${skillsText}. Provide concrete observations where available.
 
-3. ${section3}
-Under this section, you must first output this specific field label on its own line: "${labelQual}". Explain it in prose. Do NOT append trailing periods (.) or colons (:) to the section titles or field labels.
+Paragraph 4 - Personal Qualities:
+Describe the candidate's soft skills and professional behavior. ${qualitiesText || 'No specific evidence provided'}. Comment on reliability, attitude, and work ethic.
 
-Ensure there is a blank line before and after each section heading and field label.]
+Paragraph 5 - Recommendation Statement:
+Give a clear, strong recommendation. State why the candidate would be valuable to a future employer. Be specific and sincere.
 
 ${signOff}
 
 ${recommenderName || ''}
-${recommenderRole || ''}`;
+${recommenderRole || ''}
+${companyName || ''}
+
+INPUT DATA:
+- Recommender: ${recommenderName || '(Not provided)'}, ${recommenderRole || '(Not provided)'}, ${companyName || '(Not provided)'}
+- Candidate: ${candidateName || '(Not provided)'}, ${candidateRole || '(Not provided)'}
+- Relationship: ${relationshipToCandidate || '(Not provided)'}, Duration: ${durationWorkedTogether || '(Not provided)'}
+- Skills: ${skillsText}
+- Projects: ${projectsText || '(Not provided)'}
+- Qualities: ${qualitiesText || '(Not provided)'}`;
   }
 
   getToneGuide(level) {
