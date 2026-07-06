@@ -54,6 +54,7 @@ export default function RecommendationLetter() {
     try {
       const payload = {
         ...formData,
+        language: i18n.language.toUpperCase(),
         skillsObserved: parseSkills(formData.skillsObserved || ''),
       };
       const res = await recommendationApi.generate(payload);
@@ -67,12 +68,13 @@ export default function RecommendationLetter() {
     } finally {
       setGenerating(false);
     }
-  }, [formData, t, setGenerating, setErrors, addToast]);
+  }, [formData, t, i18n, setGenerating, setErrors, addToast]);
 
   const handleDownloadPdf = useCallback(async () => {
     try {
       const payload = {
         ...formData,
+        language: i18n.language.toUpperCase(),
         skillsObserved: parseSkills(formData.skillsObserved || ''),
       };
       await recommendationApi.downloadPdf(payload);
@@ -80,7 +82,7 @@ export default function RecommendationLetter() {
     } catch {
       addToast(t('toast.pdfUnavailable'), 'error');
     }
-  }, [formData, addToast]);
+  }, [formData, i18n, t, addToast]);
 
   const handleReset = useCallback(() => { reset(); setResult(null); }, [reset]);
 

@@ -14,7 +14,7 @@ export default function Register() {
   const setAuth = useAppStore(s => s.setAuth);
   const addToast = useAppStore(s => s.addToast);
 
-  const from = location.state?.from?.pathname || '/motivation-letter';
+  const from = location.state?.from?.pathname || '/recommendation-letter';
 
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');

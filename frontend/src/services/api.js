@@ -4,6 +4,7 @@ const api = axios.create({
   baseURL: '/api',
   timeout: 120000,
   headers: { 'Content-Type': 'application/json' },
+  withCredentials: true,
 });
 
 api.interceptors.request.use(
@@ -57,7 +58,7 @@ api.interceptors.response.use(
       isRefreshing = true;
 
       try {
-        const refreshResponse = await axios.post('/api/auth/refresh');
+        const refreshResponse = await axios.post('/api/auth/refresh', {}, { withCredentials: true });
         const accessToken = refreshResponse.data?.data?.accessToken;
 
         if (!accessToken) throw new Error('Refresh response missing token');
