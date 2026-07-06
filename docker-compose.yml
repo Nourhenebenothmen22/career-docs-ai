@@ -1,9 +1,9 @@
 services:
   redis:
-    image: redis:7-alpine
+    image: redis:7.2-alpine
     restart: unless-stopped
     ports:
-      - "6380:6379"
+      - "127.0.0.1:6380:6379"
     volumes:
       - redis-data:/data
     networks:
@@ -14,13 +14,18 @@ services:
       timeout: 5s
       retries: 5
       start_period: 5s
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 256M
 
   minio:
-    image: minio/minio
+    image: minio/minio:RELEASE.2024-05-10T01-39-38Z
     restart: unless-stopped
     ports:
-      - "9002:9000"
-      - "9003:9001"
+      - "127.0.0.1:9002:9000"
+      - "127.0.0.1:9003:9001"
     environment:
       MINIO_ROOT_USER: ${MINIO_ROOT_USER:-minioadmin}
       MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-minioadminpassword}
@@ -30,11 +35,17 @@ services:
     networks:
       - backend-net
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:9000/minio/health/live || exit 1"]
+      # Use built-in MinIO client 'mc ready local' instead of curl (curl is not installed in official minio images)
+      test: ["CMD", "mc", "ready", "local"]
       interval: 10s
       timeout: 5s
       retries: 5
       start_period: 10s
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 512M
 
   backend:
     build:
@@ -42,7 +53,7 @@ services:
       dockerfile: Dockerfile
     restart: unless-stopped
     ports:
-      - "5001:5000"
+      - "127.0.0.1:5001:5000"
     environment:
       PORT: 5000
       MONGODB_URI: ${MONGODB_URI}
@@ -73,6 +84,11 @@ services:
       timeout: 10s
       retries: 3
       start_period: 15s
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 1024M
 
   frontend:
     build:
@@ -80,12 +96,24 @@ services:
       dockerfile: Dockerfile
     restart: unless-stopped
     ports:
-      - "3001:80"
+      - "3001:8080"
     depends_on:
       backend:
         condition: service_healthy
     networks:
       - frontend-net
+    healthcheck:
+      # Alpine-based Nginx contains busybox wget which works perfectly for healthchecks
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8080/ || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 5s
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 256M
 
 networks:
   frontend-net:
