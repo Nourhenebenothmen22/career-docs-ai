@@ -78,18 +78,52 @@ Generate the final letter now. Output ONLY the letter text starting from candida
     const {
       recommenderName, recommenderRole, candidateName, candidateRole,
       relationshipToCandidate, companyName, durationWorkedTogether,
-      skillsObserved,
+      skillsObserved, language,
       projectName, projectType, teamSize, workMode,
       keyAchievements,
       communicationEvidence, problemSolvingEvidence, ownershipEvidence,
     } = data;
-    const languageVal = 'EN';
-    const lang = 'English';
+    const languageVal = (language || 'EN').toUpperCase();
+    const lang = languageVal === 'FR' ? 'French' : languageVal === 'AR' ? 'Arabic' : 'English';
     
-    const dateStr = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+    const dateStr = languageVal === 'FR' 
+      ? new Date().toLocaleDateString('fr-FR', { year: 'numeric', month: 'long', day: 'numeric' })
+      : languageVal === 'AR'
+      ? new Date().toLocaleDateString('ar-EG', { year: 'numeric', month: 'long', day: 'numeric' })
+      : new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
 
-    const salutation = 'To Whom It May Concern,';
-    const signOff = 'Sincerely,';
+    const salutation = languageVal === 'FR' ? 'Madame, Monsieur,' : languageVal === 'AR' ? 'إلى من يهمه الأمر،' : 'To Whom It May Concern,';
+    const signOff = languageVal === 'FR' ? 'Cordialement,' : languageVal === 'AR' ? 'مع خالص التقدير،' : 'Sincerely,';
+
+    let section1 = 'Relationship with the Candidate';
+    let section2 = 'Observed Skills';
+    let section3 = 'Soft Skills';
+
+    let labelRel = 'Relationship';
+    let labelDur = 'Duration';
+    let labelSkills = 'Observed Skills';
+    let labelAch = 'Key Achievements';
+    let labelQual = 'Soft Skills';
+
+    if (languageVal === 'FR') {
+      section1 = 'Relation avec le Candidat';
+      section2 = 'Compétences Observées';
+      section3 = 'Compétences comportementales';
+      labelRel = 'Relation avec le Candidat';
+      labelDur = 'Durée';
+      labelSkills = 'Compétences Observées';
+      labelAch = 'Réalisations Clés';
+      labelQual = 'Compétences comportementales';
+    } else if (languageVal === 'AR') {
+      section1 = 'علاقة مع المترشح';
+      section2 = 'المهارات الملاحظة';
+      section3 = 'المهارات الشخصية';
+      labelRel = 'العلاقة';
+      labelDur = 'المدة';
+      labelSkills = 'المهارات الملاحظة';
+      labelAch = 'الإنجازات الرئيسية';
+      labelQual = 'المهارات الشخصية';
+    }
 
     return `You are a Senior AI Systems Designer and Prompt Engineer specializing in dynamic, non-hardcoded HR recommendation letters. Write a formal recommendation letter in plain text format that is fully driven by the provided input fields with ZERO hardcoded content or static templates.
 
@@ -148,14 +182,14 @@ ${salutation}
 
 [Dynamic body paragraphs: construct the body paragraphs using exactly these three numbered sections:
 
-1. Relation avec le Candidat
-Under this section, you must first output these specific field labels on their own line: "Relationship" and "Duration". Explain them in prose. Do NOT append trailing periods (.) or colons (:) to the section titles or field labels (e.g. write "1. Relation avec le Candidat" instead of "1. Relation avec le Candidat." or "1. Relation avec le Candidat:", and write "Relationship" instead of "Relationship." or "Relationship:").
+1. ${section1}
+Under this section, you must first output these specific field labels on their own line: "${labelRel}" and "${labelDur}". Explain them in prose. Do NOT append trailing periods (.) or colons (:) to the section titles or field labels (e.g. write "1. ${section1}" instead of "1. ${section1}." or "1. ${section1}:", and write "${labelRel}" instead of "${labelRel}." or "${labelRel}:").
 
-2. Compétences Observées
-Under this section, you must first output these specific field labels on their own line: "Academic & Professional Skills" and "Key Achievements". Explain them in prose. Do NOT append trailing periods (.) or colons (:) to the section titles or field labels (e.g. write "2. Compétences Observées" instead of "2. Compétences Observées.").
+2. ${section2}
+Under this section, you must first output these specific field labels on their own line: "${labelSkills}" and "${labelAch}". Explain them in prose. Do NOT append trailing periods (.) or colons (:) to the section titles or field labels.
 
-3. Soft Skills
-Under this section, you must first output this specific field label on its own line: "Professional Qualities". Explain it in prose. Do NOT append trailing periods (.) or colons (:) to the section titles or field labels (e.g. write "3. Soft Skills" instead of "3. Soft Skills.").
+3. ${section3}
+Under this section, you must first output this specific field label on its own line: "${labelQual}". Explain it in prose. Do NOT append trailing periods (.) or colons (:) to the section titles or field labels.
 
 Ensure there is a blank line before and after each section heading and field label.]
 
