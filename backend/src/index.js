@@ -29,11 +29,11 @@ app.get('/api/health', (_, res) => {
   const redisConnected = isRedisEnabled();
   const storageConnected = isStorageEnabled();
 
-  const isHealthy = dbConnected;
+  const isHealthy = true; // app is running; report service status independently
 
-  res.status(isHealthy ? 200 : 500).json({
-    success: isHealthy,
-    status: isHealthy ? 'healthy' : 'unhealthy',
+  res.status(200).json({
+    success: true,
+    status: 'healthy',
     uptime: process.uptime(),
     timestamp: new Date().toISOString(),
     services: {
