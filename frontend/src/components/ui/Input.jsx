@@ -73,3 +73,42 @@ export function Select({
     </div>
   );
 }
+
+export const Textarea = forwardRef(({
+  label,
+  error,
+  className = '',
+  id,
+  rows = 3,
+  ...props
+}, ref) => {
+  const generatedId = useId();
+  const textareaId = id || generatedId;
+
+  return (
+    <div className="space-y-1.5">
+      {label && (
+        <label htmlFor={textareaId} className="block text-caption font-medium text-gray-700">
+          {label}
+          {props.required && <span className="ms-1 text-red-500" aria-hidden="true">*</span>}
+        </label>
+      )}
+      <textarea
+        ref={ref}
+        id={textareaId}
+        rows={rows}
+        aria-invalid={!!error}
+        aria-describedby={error ? `${textareaId}-error` : undefined}
+        className={`block w-full rounded-button border bg-white px-4 py-2.5 text-caption text-gray-900 placeholder-gray-400 shadow-button transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 ${error ? 'border-red-300 focus-visible:border-red-500 focus-visible:ring-red-500/30' : 'border-gray-300 focus-visible:border-primary-500 focus-visible:ring-primary-500/30'} ${className}`}
+        {...props}
+      />
+      {error && (
+        <p id={`${textareaId}-error`} className="text-small text-red-500" role="alert">
+          {error}
+        </p>
+      )}
+    </div>
+  );
+});
+
+Textarea.displayName = 'Textarea';
