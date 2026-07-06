@@ -1,25 +1,14 @@
 import { useTranslation } from 'react-i18next';
-import Input, { Select } from '../ui/Input';
+import Input, { Textarea } from '../ui/Input';
 import Button from '../ui/Button';
 import { SparklesIcon, ArrowPathIcon } from '@heroicons/react/24/outline';
 
 export default function RecommendationForm({ formData, updateField, errors, onGenerate, onReset, loading }) {
   const { t } = useTranslation();
 
-  const perfOptions = [
-    { value: 'excellent', label: t('recommendation.excellent') },
-    { value: 'very good', label: t('recommendation.veryGood') },
-    { value: 'good', label: t('recommendation.good') },
-  ];
-
-  const langOptions = [
-    { value: 'EN', label: 'English' },
-    { value: 'FR', label: 'Français' },
-  ];
-
   return (
     <div className="space-y-8">
-      {/* Recommender Information */}
+      {/* 1. Recommender Information */}
       <div className="rounded-card border bg-white p-6 shadow-card sm:p-8">
         <div className="mb-6">
           <div className="flex items-center gap-3">
@@ -62,7 +51,7 @@ export default function RecommendationForm({ formData, updateField, errors, onGe
         </div>
       </div>
 
-      {/* Candidate Information */}
+      {/* 2. Candidate Information */}
       <div className="rounded-card border bg-white p-6 shadow-card sm:p-8">
         <div className="mb-6">
           <div className="flex items-center gap-3">
@@ -112,20 +101,128 @@ export default function RecommendationForm({ formData, updateField, errors, onGe
               onChange={e => updateField('durationWorkedTogether', e.target.value)}
             />
           </div>
-          <Input
-            label={t('recommendation.skillsObserved')}
-            required
-            error={errors.skillsObserved}
-            placeholder={t('recommendation.skillsObservedPlaceholder')}
-            value={formData.skillsObserved}
-            onChange={e => updateField('skillsObserved', e.target.value)}
-          />
+        </div>
+      </div>
+
+      {/* 3. Collaboration Context */}
+      <div className="rounded-card border bg-white p-6 shadow-card sm:p-8">
+        <div className="mb-6">
+          <div className="flex items-center gap-3">
+            <div className="flex h-8 w-8 items-center justify-center rounded-button bg-primary-100">
+              <span className="text-caption font-bold text-primary-600" aria-hidden="true">3</span>
+            </div>
+            <div>
+              <h3 className="text-subheading text-gray-900">{t('recommendation.collaborationContext') || 'Relation avec le Candidat'}</h3>
+              <p className="text-small text-gray-500">{t('recommendation.collaborationContextDesc') || 'Describe the project details and team size'}</p>
+            </div>
+          </div>
+        </div>
+        <div className="space-y-4">
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <Select label={t('recommendation.performanceLevel')} options={perfOptions} value={formData.performanceLevel} onChange={e => updateField('performanceLevel', e.target.value)} />
-            <Select label={t('recommendation.language')} options={langOptions} value={formData.language} onChange={e => updateField('language', e.target.value)} />
+            <Input
+              label={t('recommendation.projectName') || 'Project Name'}
+              error={errors.projectName}
+              placeholder="e.g. Enterprise E-Commerce Redesign"
+              value={formData.projectName || ''}
+              onChange={e => updateField('projectName', e.target.value)}
+            />
+            <Input
+              label={t('recommendation.projectType') || 'Project Type / Scope'}
+              error={errors.projectType}
+              placeholder="e.g. SaaS Portal / Web Application / REST API"
+              value={formData.projectType || ''}
+              onChange={e => updateField('projectType', e.target.value)}
+            />
+          </div>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <Input
+              label={t('recommendation.teamSize') || 'Team Size'}
+              error={errors.teamSize}
+              placeholder="e.g. 5 developers"
+              value={formData.teamSize || ''}
+              onChange={e => updateField('teamSize', e.target.value)}
+            />
+            <Input
+              label={t('recommendation.workMode') || 'Work Mode / Collaboration Level'}
+              error={errors.workMode}
+              placeholder="e.g. Remote, Collaborative co-developer"
+              value={formData.workMode || ''}
+              onChange={e => updateField('workMode', e.target.value)}
+            />
           </div>
         </div>
       </div>
+
+      {/* 4. Skills & Key Achievements */}
+      <div className="rounded-card border bg-white p-6 shadow-card sm:p-8">
+        <div className="mb-6">
+          <div className="flex items-center gap-3">
+            <div className="flex h-8 w-8 items-center justify-center rounded-button bg-primary-100">
+              <span className="text-caption font-bold text-primary-600" aria-hidden="true">4</span>
+            </div>
+            <div>
+              <h3 className="text-subheading text-gray-900">{t('recommendation.skillsAndAchievements') || 'Compétences Observées'}</h3>
+              <p className="text-small text-gray-500">{t('recommendation.skillsAndAchievementsDesc') || 'List academic/professional skills and major achievements'}</p>
+            </div>
+          </div>
+        </div>
+        <div className="space-y-4">
+          <Input
+            label={t('recommendation.skillsObserved') || 'Academic & Professional Skills (comma-separated)'}
+            error={errors.skillsObserved}
+            placeholder={t('recommendation.skillsObservedPlaceholder') || 'e.g. Leadership, Problem-solving, Python'}
+            value={formData.skillsObserved || ''}
+            onChange={e => updateField('skillsObserved', e.target.value)}
+          />
+          <Textarea
+            label={t('recommendation.keyAchievements') || 'Key Achievements'}
+            error={errors.keyAchievements}
+            placeholder="e.g. Led payment gateway integration and dashboard charting modules..."
+            value={formData.keyAchievements || ''}
+            onChange={e => updateField('keyAchievements', e.target.value)}
+          />
+        </div>
+      </div>
+
+      {/* 5. Evidence-Based Soft Skills */}
+      <div className="rounded-card border bg-white p-6 shadow-card sm:p-8">
+        <div className="mb-6">
+          <div className="flex items-center gap-3">
+            <div className="flex h-8 w-8 items-center justify-center rounded-button bg-primary-100">
+              <span className="text-caption font-bold text-primary-600" aria-hidden="true">5</span>
+            </div>
+            <div>
+              <h3 className="text-subheading text-gray-900">{t('recommendation.softSkills') || 'Soft Skills'}</h3>
+              <p className="text-small text-gray-500">{t('recommendation.softSkillsDesc') || 'State concrete examples demonstrating leadership or collaboration'}</p>
+            </div>
+          </div>
+        </div>
+        <div className="space-y-4">
+          <Textarea
+            label={t('recommendation.communicationEvidence') || 'Communication & Documentation Examples'}
+            error={errors.communicationEvidence}
+            placeholder="e.g. Created thorough API wiki in Swagger and mentored two junior developers..."
+            value={formData.communicationEvidence || ''}
+            onChange={e => updateField('communicationEvidence', e.target.value)}
+          />
+          <Textarea
+            label={t('recommendation.problemSolvingEvidence') || 'Problem-Solving / Analytical Proof'}
+            error={errors.problemSolvingEvidence}
+            placeholder="e.g. Restructured data indices independently during production downtime..."
+            value={formData.problemSolvingEvidence || ''}
+            onChange={e => updateField('problemSolvingEvidence', e.target.value)}
+          />
+          <Textarea
+            label={t('recommendation.ownershipEvidence') || 'Ownership & Autonomy Examples'}
+            error={errors.ownershipEvidence}
+            placeholder="e.g. Acted as primary owner for CI/CD workflow automation..."
+            value={formData.ownershipEvidence || ''}
+            onChange={e => updateField('ownershipEvidence', e.target.value)}
+          />
+        </div>
+      </div>
+
+
 
       {/* API Error */}
       {errors.api && (
