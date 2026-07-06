@@ -14,7 +14,7 @@ export default function Login() {
   const setAuth = useAppStore(s => s.setAuth);
   const addToast = useAppStore(s => s.addToast);
 
-  const from = location.state?.from?.pathname || '/motivation-letter';
+  const from = location.state?.from?.pathname || '/recommendation-letter';
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
