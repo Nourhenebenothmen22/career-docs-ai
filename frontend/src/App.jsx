@@ -32,7 +32,7 @@ function ProtectedRoute({ children }) {
   return token ? children : <Navigate to="/login" state={{ from: location }} replace />;
 }
 
-function AuthLayoutWrapper() {
+function AppLayout() {
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
@@ -45,7 +45,7 @@ function AuthLayoutWrapper() {
 
 function RootRedirector() {
   const token = useAppStore(s => s.token);
-  return token ? <Navigate to="/motivation-letter" replace /> : <Landing />;
+  return token ? <Navigate to="/recommendation-letter" replace /> : <Landing />;
 }
 
 function AppContent() {
@@ -68,7 +68,7 @@ function AppContent() {
 
             <Route path="/" element={<RootRedirector />} />
 
-            <Route element={<ProtectedRoute><AuthLayoutWrapper /></ProtectedRoute>}>
+            <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
               <Route path="/motivation-letter" element={<MotivationLetter />} />
               <Route path="/recommendation-letter" element={<RecommendationLetter />} />
             </Route>
