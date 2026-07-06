@@ -16,6 +16,7 @@ const motivationValidation = [
   body('clubs.*.role').optional({ values: 'falsy' }).isIn(['member', 'coordinator', 'president', 'vicePresident', 'organizer']),
   body('clubs.*.duration').optional().trim(),
   body('clubs.*.responsibilities').optional().trim(),
+  body('id').optional().isMongoId().withMessage('Invalid document ID'),
 ];
 
 const recommendationValidation = [
@@ -41,6 +42,7 @@ const recommendationValidation = [
   body('problemSolvingEvidence').optional().trim(),
   body('ownershipEvidence').optional().trim(),
   body('language').optional().trim(),
+  body('id').optional().isMongoId().withMessage('Invalid document ID'),
 ];
 
 const historyPagination = [
