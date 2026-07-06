@@ -58,7 +58,7 @@ exports.generateStream = async (req, res, next) => {
       logger.warn('Failed to save streamed motivation document to DB', { message: err.message });
     }
 
-    res.write(`data: ${JSON.stringify({ done: true, documentId: doc?._id, htmlContent })}\n\n`);
+    res.write(`data: ${JSON.stringify({ done: true, documentId: doc?._id || null, htmlContent })}\n\n`);
     res.end();
   } catch (error) {
     logger.error('Streaming generation failed', { error: error.message });
