@@ -15,12 +15,14 @@ import useAppStore from '../store/useAppStore';
 const initialForm = {
   recommenderName: '', recommenderRole: '', candidateName: '', candidateRole: '',
   relationshipToCandidate: '', companyName: '', durationWorkedTogether: '',
-  skillsObserved: '', performanceLevel: 'excellent', language: 'EN',
+  skillsObserved: '', keyAchievements: '',
+  projectName: '', projectType: '', teamSize: '', workMode: '',
+  communicationEvidence: '', problemSolvingEvidence: '', ownershipEvidence: '',
 };
 
 const requiredFields = [
   'recommenderName', 'recommenderRole', 'candidateName', 'candidateRole',
-  'relationshipToCandidate', 'companyName', 'durationWorkedTogether', 'skillsObserved',
+  'relationshipToCandidate', 'companyName', 'durationWorkedTogether',
 ];
 
 export default function RecommendationLetter() {
@@ -50,7 +52,10 @@ export default function RecommendationLetter() {
     setGenerating(true);
     setErrors({});
     try {
-      const payload = { ...formData, skillsObserved: parseSkills(formData.skillsObserved) };
+      const payload = {
+        ...formData,
+        skillsObserved: parseSkills(formData.skillsObserved || ''),
+      };
       const res = await recommendationApi.generate(payload);
       setResult(res.data);
       setModalOpen(true);
@@ -66,7 +71,10 @@ export default function RecommendationLetter() {
 
   const handleDownloadPdf = useCallback(async () => {
     try {
-      const payload = { ...formData, skillsObserved: parseSkills(formData.skillsObserved) };
+      const payload = {
+        ...formData,
+        skillsObserved: parseSkills(formData.skillsObserved || ''),
+      };
       await recommendationApi.downloadPdf(payload);
       addToast(t('toast.pdfDownloaded'), 'success');
     } catch {
