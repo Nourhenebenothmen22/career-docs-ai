@@ -50,22 +50,49 @@ function parseLetter(letterText, defaultSalutation, defaultSignOff, defaultSigna
     signOff = lines.find(l => signOffRegex.test(l)) || defaultSignOff;
   }
 
-  let bodyParagraphs = [];
+  let rawParagraphs = [];
   const salIndex = lines.findIndex(l => l === salutation);
   const signIndex = lines.findIndex(l => l === signOff);
 
   if (salIndex !== -1 && signIndex !== -1 && signIndex > salIndex) {
     const bodyText = lines.slice(salIndex + 1, signIndex).join('\n');
-    bodyParagraphs = bodyText
+    rawParagraphs = bodyText
       .split(/\n\s*\n/)
       .map(p => p.trim())
       .filter(p => p.length > 0);
   } else {
     const bodyText = bodyLines.join('\n');
-    bodyParagraphs = bodyText
+    rawParagraphs = bodyText
       .split(/\n\s*\n/)
       .map(p => p.trim())
       .filter(p => p.length > 0);
+  }
+
+  const isHeadingOrLabel = (line) => {
+    const cleaned = line.trim();
+    if (/^\d+\.\s+([^.:]+)[.:]?$/.test(cleaned)) return true;
+    if (/^(Relationship|Duration|Responsibilities|Academic\s*\/\s*Professional\s*Skills|Academic\s*&\s*Professional\s*Skills|Key\s*Achievements|Professional\s*Qualities|Overall\s*Recommendation|Closing\s*Statement|Signature)[.:]?$/i.test(cleaned)) return true;
+    return false;
+  };
+
+  for (let p of rawParagraphs) {
+    const subLines = p.split('\n').map(l => l.trim()).filter(Boolean);
+    let currentParagraph = [];
+    
+    for (let line of subLines) {
+      if (isHeadingOrLabel(line)) {
+        if (currentParagraph.length > 0) {
+          bodyParagraphs.push(currentParagraph.join(' '));
+          currentParagraph = [];
+        }
+        bodyParagraphs.push(line);
+      } else {
+        currentParagraph.push(line);
+      }
+    }
+    if (currentParagraph.length > 0) {
+      bodyParagraphs.push(currentParagraph.join(' '));
+    }
   }
 
   return { subject, salutation, bodyParagraphs, signOff, signature, signatureRole };
@@ -344,8 +371,31 @@ class HtmlTemplate {
       font-size: 10.5pt;
       color: #1e293b;
     }
-    .body-text p {
-      margin-bottom: 16px;
+    .body-p {
+      margin-bottom: 14px;
+    }
+    .section-title {
+      font-family: 'Lora', Georgia, serif;
+      font-size: 11.5pt;
+      font-weight: 700;
+      color: #0f172a;
+      margin-top: 22px;
+      margin-bottom: 8px;
+    }
+    .section-number {
+      font-family: 'Inter', sans-serif;
+      font-size: 10pt;
+      font-weight: 400;
+      color: #64748b;
+      margin-right: 6px;
+    }
+    .field-label {
+      font-family: 'Inter', sans-serif;
+      font-weight: 600;
+      color: #334155;
+      margin-top: 14px;
+      margin-bottom: 4px;
+      font-size: 10pt;
     }
     /* Signature Block */
     .signature-section {
@@ -407,7 +457,34 @@ class HtmlTemplate {
     </div>
 
     <div class="body-text">
-      ${parsed.bodyParagraphs.map(p => `<p>${p}</p>`).join('')}
+      ${parsed.bodyParagraphs.map(p => {
+        let cleaned = p.trim();
+        if (!cleaned) return '';
+
+        // 1. Match numbered headings: e.g. "1. Collaboration Context.", "2. Skills & Achievements:", etc.
+        const headingMatch = cleaned.match(/^(\d+)\.\s+([^.:]+)[.:]?$/);
+        if (headingMatch) {
+          const num = headingMatch[1];
+          const title = headingMatch[2].trim();
+          if (/^(Collaboration Context|Skills\s*&\s*Achievements|Soft Skills|Skills\s*&\s*Key\s*Achievements|Relation\s+avec\s+le\s+Candidat|Compétences\s+Observées)$/i.test(title)) {
+            return `<h3 class="section-title"><span class="section-number">${num}.</span>${title}</h3>`;
+          }
+        }
+
+        // 2. Match unnumbered labels/headings: e.g. "Relationship.", "Duration:", etc.
+        const labelMatch = cleaned.match(/^([^.:]+)[.:]?$/);
+        if (labelMatch) {
+          const label = labelMatch[1].trim();
+          if (/^(Relationship|Duration|Responsibilities|Academic\s*\/\s*Professional\s*Skills|Academic\s*&\s*Professional\s*Skills|Key\s*Achievements|Professional\s*Qualities|Overall\s*Recommendation|Closing\s*Statement|Signature)$/i.test(label)) {
+            return `<p class="field-label">${label}</p>`;
+          }
+        }
+
+        // 3. Fallback: inline label cleanup e.g. "Relationship: Direct Supervisor" or "Relationship. Direct Supervisor"
+        cleaned = cleaned.replace(/^(Relationship|Duration|Responsibilities|Academic\s*\/\s*Professional\s*Skills|Academic\s*&\s*Professional\s*Skills|Key\s*Achievements)([.:])\s*/i, '$1 ');
+
+        return `<p class="body-p">${cleaned}</p>`;
+      }).join('')}
     </div>
 
     <div class="signature-section">
