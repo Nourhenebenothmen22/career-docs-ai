@@ -85,6 +85,7 @@ export default function MotivationLetter() {
     try {
       const payload = {
         ...formData,
+        id: result?.id,
         skills: parseSkills(formData.skills),
         clubs: (formData.clubs || []).filter(c => c.clubName?.trim() || c.role),
       };
@@ -93,7 +94,7 @@ export default function MotivationLetter() {
     } catch {
       addToast(t('toast.pdfUnavailable'), 'error');
     }
-  }, [formData, addToast]);
+  }, [formData, result, addToast]);
 
   const handleReset = useCallback(() => { reset(); setResult(null); setClubErrors({}); }, [reset]);
 
