@@ -78,25 +78,28 @@ Generate the final letter now. Output ONLY the letter text starting from candida
     const {
       recommenderName, recommenderRole, candidateName, candidateRole,
       relationshipToCandidate, companyName, durationWorkedTogether,
+      skillsObserved, performanceLevel, language,
       projectName, projectType, teamSize, workMode,
+      keyAchievements,
       communicationEvidence, problemSolvingEvidence, ownershipEvidence,
+      recommendationStrength,
     } = data;
-    const language = data.language || 'EN';
-    const lang = language === 'FR' ? 'French' : 'English';
+    const languageVal = language || 'EN';
+    const lang = languageVal === 'FR' ? 'French' : 'English';
     
-    const dateStr = language === 'FR' 
+    const dateStr = languageVal === 'FR' 
       ? new Date().toLocaleDateString('fr-FR', { year: 'numeric', month: 'long', day: 'numeric' })
       : new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
 
-    const salutation = language === 'FR' ? 'Madame, Monsieur,' : 'To Whom It May Concern,';
-    const signOff = language === 'FR' ? 'Cordialement,' : 'Sincerely,';
+    const salutation = languageVal === 'FR' ? 'Madame, Monsieur,' : 'To Whom It May Concern,';
+    const signOff = languageVal === 'FR' ? 'Cordialement,' : 'Sincerely,';
 
     return `You are a Senior AI Systems Designer and Prompt Engineer specializing in dynamic, non-hardcoded HR recommendation letters. Write a formal recommendation letter in plain text format that is fully driven by the provided input fields with ZERO hardcoded content or static templates.
 
 CRITICAL DYNAMIC BEHAVIOR RULES:
 - ADAPTIVE STRUCTURE: The structure and paragraph ordering must adapt dynamically based on which inputs are present. Do NOT use a fixed template, predefined filler sentences, or static section outlines.
 - MISSING FIELDS HANDLING: If an input field is empty, missing, or vague, simply skip it or reduce its weight in the final text. Do NOT fabricate, guess, or extrapolate missing details.
-- CONTEXT-AWARE EMPHASIS: Adjust the tone and paragraph emphasis according to the candidate's target role ("${candidateRole || 'the candidate'}") and relationship.
+- CONTEXT-AWARE EMPHASIS: Adjust the tone and paragraph emphasis according to the candidate's target role ("${candidateRole || 'the candidate'}"), seniority level, and relationship.
 - STRICT DATA GROUNDING & TRACEABILITY: Every sentence in the output MUST map directly to the provided input values. No generic HR filler, no hallucinated achievements, no invented metrics.
 - PROPORTIONAL LENGTH: If few inputs are provided, automatically produce a shorter, compact letter. If highly detailed inputs are provided, expand the descriptions proportionally.
 - LANGUAGE: The letter must be written entirely in ${lang}.
@@ -116,7 +119,7 @@ INPUT DATA SCHEMA:
    - Name: ${candidateName || '(Not provided)'}
    - Role: ${candidateRole || '(Not provided)'}
 
-3. Collaboration Context:
+3. Collaboration Context & Relationship:
    - Relationship: ${relationshipToCandidate || '(Not provided)'}
    - Duration: ${durationWorkedTogether || '(Not provided)'}
    - Project Name: ${projectName || '(Not provided)'}
@@ -124,10 +127,20 @@ INPUT DATA SCHEMA:
    - Team Size: ${teamSize || '(Not provided)'}
    - Work Mode/Collaboration Level: ${workMode || '(Not provided)'}
 
-4. Evidence-Based Soft Skills:
+4. Academic & Professional Skills:
+   - Skills observed: ${skillsObserved && skillsObserved.length > 0 ? skillsObserved.join(', ') : '(None provided)'}
+
+5. Key Achievements:
+   - Details: ${keyAchievements || '(Not provided)'}
+
+6. Professional Qualities (Soft Skills):
    - Communication: ${communicationEvidence || '(Not provided)'}
    - Problem-solving: ${problemSolvingEvidence || '(Not provided)'}
    - Ownership & Autonomy: ${ownershipEvidence || '(Not provided)'}
+
+7. Overall Recommendation:
+   - Performance level: ${performanceLevel || 'excellent'}
+   - Recommendation strength: ${recommendationStrength || 'strongly recommend'}
 
 LAYOUT STRUCTURE (MANDATORY EXACT POSITIONING):
 Produce the exact layout below. Align the blocks using spacing/blank spaces.
@@ -140,7 +153,7 @@ ${companyName || ''}                                      Period: ${durationWork
 
 ${salutation}
 
-[Dynamic body paragraphs: construct dynamically using only present inputs, focusing on opening collaboration context, professional collaboration details, soft skills evidence (communication, problem solving, ownership), and a strong final recommendation/endorsement.]
+[Dynamic body paragraphs: construct dynamically using only present inputs, focusing on opening collaboration context, relationship details, academic & professional skills, key achievements, professional qualities (soft skills), and a strong final overall recommendation strictly proportional to performance level.]
 
 ${signOff}
 
