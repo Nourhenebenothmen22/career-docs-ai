@@ -26,10 +26,17 @@ const recommendationValidation = [
   body('relationshipToCandidate').trim().notEmpty().withMessage('Relationship is required'),
   body('companyName').trim().notEmpty().withMessage('Company name is required'),
   body('durationWorkedTogether').trim().notEmpty().withMessage('Duration is required'),
-  body('skillsObserved').isArray({ min: 1 }).withMessage('At least one skill is required'),
-  body('skillsObserved.*').trim().notEmpty().withMessage('Each skill must not be empty'),
-  body('performanceLevel').isIn(PERFORMANCE_LEVELS).withMessage(`Performance level must be ${PERFORMANCE_LEVELS.join(', ')}`),
-  body('language').optional().isIn(LANGUAGES).withMessage(`Language must be ${LANGUAGES.join(' or ')}`),
+
+  // New Collaboration Context fields
+  body('projectName').optional().trim(),
+  body('projectType').optional().trim(),
+  body('teamSize').optional().trim(),
+  body('workMode').optional().trim(),
+  
+  // New Soft Skills fields
+  body('communicationEvidence').optional().trim(),
+  body('problemSolvingEvidence').optional().trim(),
+  body('ownershipEvidence').optional().trim(),
 ];
 
 const historyPagination = [
