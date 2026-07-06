@@ -19,7 +19,10 @@ const app = express();
 
 app.use(helmet());
 app.use(compression());
-app.use(cors({ origin: config.cors.origin }));
+app.use(cors({
+  origin: config.cors.origin === '*' ? true : config.cors.origin,
+  credentials: true
+}));
 app.use(express.json({ limit: '1mb' }));
 app.use(requestLogger);
 app.use(rateLimiter());
@@ -29,7 +32,21 @@ app.get('/api/health', (_, res) => {
   const redisConnected = isRedisEnabled();
   const storageConnected = isStorageEnabled();
 
-  const isHealthy = true; // app is running; report service status independently
+  const isHealthy = !config.mongodbUri || dbConnected;
+
+  if (!isHealthy) {
+    return res.status(503).json({
+      success: false,
+      status: 'unhealthy',
+      uptime: process.uptime(),
+      timestamp: new Date().toISOString(),
+      services: {
+        database: dbConnected ? 'connected' : 'disconnected',
+        redis: redisConnected ? 'connected' : 'disconnected',
+        storage: storageConnected ? 'configured' : 'disabled',
+      }
+    });
+  }
 
   res.status(200).json({
     success: true,

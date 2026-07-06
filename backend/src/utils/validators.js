@@ -40,6 +40,7 @@ const recommendationValidation = [
   body('communicationEvidence').optional().trim(),
   body('problemSolvingEvidence').optional().trim(),
   body('ownershipEvidence').optional().trim(),
+  body('language').optional().trim(),
 ];
 
 const historyPagination = [
