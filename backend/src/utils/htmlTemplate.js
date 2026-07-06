@@ -70,11 +70,31 @@ function parseLetter(letterText, defaultSalutation, defaultSignOff, defaultSigna
 
   const isHeadingOrLabel = (line) => {
     const cleaned = line.trim();
-    if (/^\d+\.\s+([^.:]+)[.:]?$/.test(cleaned)) return true;
-    if (/^(Relationship|Duration|Responsibilities|Academic\s*\/\s*Professional\s*Skills|Academic\s*&\s*Professional\s*Skills|Key\s*Achievements|Professional\s*Qualities|Overall\s*Recommendation|Closing\s*Statement|Signature)[.:]?$/i.test(cleaned)) return true;
+    const headingMatch = cleaned.match(/^(\d+)\.\s+([^.:]+)[.:]?$/);
+    if (headingMatch) {
+      const title = headingMatch[2].trim().toLowerCase();
+      const allowedTitles = [
+        'collaboration context', 'skills & achievements', 'soft skills', 'skills & key achievements',
+        'relationship with the candidate', 'observed skills',
+        'relation avec le candidat', 'compétences observées',
+        'علاقة مع المترشح', 'المهارات الملاحظة', 'المهارات الشخصية'
+      ];
+      if (allowedTitles.includes(title)) return true;
+    }
+    const labelMatch = cleaned.match(/^([^.:]+)[.:]?$/);
+    if (labelMatch) {
+      const label = labelMatch[1].trim().toLowerCase();
+      const allowedLabels = [
+        'relationship', 'duration', 'responsibilities', 'academic / professional skills', 'academic & professional skills', 'key achievements', 'professional qualities', 'overall recommendation', 'closing statement', 'signature',
+        'relation', 'durée', 'responsabilités', 'compétences académiques & professionnelles', 'réalisations clés', 'qualités professionnelles',
+        'العلاقة', 'المدة', 'المسؤوليات', 'المهارات الأكاديمية والمهنية', 'الإنجازات الرئيسية', 'المهارات الشخصية'
+      ];
+      if (allowedLabels.includes(label)) return true;
+    }
     return false;
   };
 
+  let bodyParagraphs = [];
   for (let p of rawParagraphs) {
     const subLines = p.split('\n').map(l => l.trim()).filter(Boolean);
     let currentParagraph = [];
@@ -461,12 +481,25 @@ class HtmlTemplate {
         let cleaned = p.trim();
         if (!cleaned) return '';
 
-        // 1. Match numbered headings: e.g. "1. Collaboration Context.", "2. Skills & Achievements:", etc.
+        const allowedTitles = [
+          'collaboration context', 'skills & achievements', 'soft skills', 'skills & key achievements',
+          'relationship with the candidate', 'observed skills',
+          'relation avec le candidat', 'compétences observées',
+          'علاقة مع المترشح', 'المهارات الملاحظة', 'المهارات الشخصية'
+        ];
+
+        const allowedLabels = [
+          'relationship', 'duration', 'responsibilities', 'academic / professional skills', 'academic & professional skills', 'key achievements', 'professional qualities', 'overall recommendation', 'closing statement', 'signature',
+          'relation', 'durée', 'responsabilités', 'compétences académiques & professionnelles', 'réalisations clés', 'qualités professionnelles',
+          'العلاقة', 'المدة', 'المسؤوليات', 'المهارات الأكاديمية والمهنية', 'الإنجازات الرئيسية', 'المهارات الشخصية'
+        ];
+
+        // 1. Match numbered headings: e.g. "1. Relationship with the Candidate.", "2. Observed Skills:", etc.
         const headingMatch = cleaned.match(/^(\d+)\.\s+([^.:]+)[.:]?$/);
         if (headingMatch) {
           const num = headingMatch[1];
           const title = headingMatch[2].trim();
-          if (/^(Collaboration Context|Skills\s*&\s*Achievements|Soft Skills|Skills\s*&\s*Key\s*Achievements|Relation\s+avec\s+le\s+Candidat|Compétences\s+Observées)$/i.test(title)) {
+          if (allowedTitles.includes(title.toLowerCase())) {
             return `<h3 class="section-title"><span class="section-number">${num}.</span>${title}</h3>`;
           }
         }
@@ -475,13 +508,19 @@ class HtmlTemplate {
         const labelMatch = cleaned.match(/^([^.:]+)[.:]?$/);
         if (labelMatch) {
           const label = labelMatch[1].trim();
-          if (/^(Relationship|Duration|Responsibilities|Academic\s*\/\s*Professional\s*Skills|Academic\s*&\s*Professional\s*Skills|Key\s*Achievements|Professional\s*Qualities|Overall\s*Recommendation|Closing\s*Statement|Signature)$/i.test(label)) {
+          if (allowedLabels.includes(label.toLowerCase())) {
             return `<p class="field-label">${label}</p>`;
           }
         }
 
         // 3. Fallback: inline label cleanup e.g. "Relationship: Direct Supervisor" or "Relationship. Direct Supervisor"
-        cleaned = cleaned.replace(/^(Relationship|Duration|Responsibilities|Academic\s*\/\s*Professional\s*Skills|Academic\s*&\s*Professional\s*Skills|Key\s*Achievements)([.:])\s*/i, '$1 ');
+        for (let baseLabel of allowedLabels) {
+          const regex = new RegExp('^(' + baseLabel.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&') + ')[.:]\\s*', 'i');
+          if (regex.test(cleaned)) {
+            cleaned = cleaned.replace(regex, '$1 ');
+            break;
+          }
+        }
 
         return `<p class="body-p">${cleaned}</p>`;
       }).join('')}

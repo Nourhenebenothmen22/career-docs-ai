@@ -17,6 +17,15 @@ const CHROME_PATHS = [
 ];
 
 function findBrowser() {
+  if (process.env.PUPPETEER_EXECUTABLE_PATH) {
+    try {
+      if (existsSync(process.env.PUPPETEER_EXECUTABLE_PATH)) {
+        return process.env.PUPPETEER_EXECUTABLE_PATH;
+      }
+    } catch (err) {
+      logger.warn('Failed to verify PUPPETEER_EXECUTABLE_PATH existence', { message: err.message });
+    }
+  }
   for (const p of CHROME_PATHS) {
     try {
       if (existsSync(p)) return p;
