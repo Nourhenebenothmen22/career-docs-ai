@@ -107,7 +107,7 @@ function triggerDownload(blob, filename) {
 
 async function downloadPdf(url, data, filename) {
   const response = await api.post(url, data, { responseType: 'blob' });
-  triggerDownload(new Blob([response.data]), filename);
+  triggerDownload(response.data, filename);
 }
 
 export const authApi = {
