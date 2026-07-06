@@ -4,32 +4,63 @@ class PromptBuilder {
     const toneGuide = this.getToneGuide(experienceLevel);
     const lang = language === 'FR' ? 'French' : 'English';
     
+    // Format date based on language
+    const dateStr = language === 'FR' 
+      ? new Date().toLocaleDateString('fr-FR', { year: 'numeric', month: 'long', day: 'numeric' })
+      : new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+      
+    // Format subject label based on language
+    const subjectLabel = language === 'FR' ? 'Objet : Candidature au poste de' : 'Subject: Application for the';
+    const subjectSuffix = language === 'FR' ? jobTitle : `${jobTitle} position`;
+    
+    // Format salutation and sign-off
+    const salutation = language === 'FR' ? 'Madame, Monsieur,' : 'Dear Hiring Manager,';
+    const signOff = language === 'FR' ? 'Cordialement,' : 'Sincerely,';
+
     const clubsText = (clubs || []).filter(c => c.clubName?.trim()).map(c =>
       `- Club: ${c.clubName}, Role: ${c.role || 'Member'}, Duration: ${c.duration || 'N/A'}, Responsibilities: ${c.responsibilities || 'N/A'}`
     ).join('\n');
 
-    return `You are a professional senior HR manager and career letter writer with 20+ years of experience. Write a real-world, publication-ready motivation letter (cover letter) that strictly fits on ONE PAGE when printed (A4 format).
+    return `You are a professional senior HR manager and career letter writer with 20+ years of experience. Write a real-world, publication-ready motivation letter (cover letter) in plain text format that strictly fits on ONE PAGE when printed (A4 format).
 
 STRICT INSTRUCTIONS:
 - LANGUAGE: The letter must be written entirely in ${lang}.
-- TARGET RECIPIENTS: Address the hiring manager of ${companyName}.
-- STRICT LENGTH CONSTRAINT: The final letter MUST NOT exceed 350 words under any circumstances. If the candidate has rich experience or multiple skills, compress and merge the information. Remove all fluff, unnecessary storytelling, and redundancy.
-- FORMAT: Output ONLY the letter text. No markdown header metadata, no JSON wrapper, no intro/outro explanations (like "Here is the letter:"), and no chat conversational remarks.
-- NO BULLET POINTS/LISTS: Ensure the letter flows as a natural, polished, cohesive multi-paragraph prose narrative. Never use bullet points, tables, or numbered lists.
-- NO GENERIC TEMPLATES OR PLACEHOLDERS: You MUST use the provided candidate details and target company info. Never fall back to placeholders like "[Your Company]", "[Company Name]", or "the company". Integrate the company name "${companyName}" and job title "${jobTitle}" naturally.
+- STRICT LENGTH CONSTRAINT: The final letter (including the header, date, subject line, body, and signature) MUST NOT exceed 350 words total under any circumstances. Keep the content extremely concise, value-dense, and direct. Remove all fluff, unnecessary storytelling, and redundancy.
+- FORMAT: Output ONLY the plain text letter. No HTML, no styling, no colors, no UI elements. Do not include markdown header metadata, no JSON wrapper, and no chat conversational remarks.
+- NO BULLET POINTS/LISTS: Ensure the letter body flows as a natural, polished, cohesive multi-paragraph prose narrative. Never use bullet points, tables, or numbered lists.
+- NO GENERIC TEMPLATES OR PLACEHOLDERS: You MUST use the provided candidate details and target company info. Never fall back to placeholders like "Your Company", "the company", or "[Company Address]".
 - INPUT SANITIZATION: Do not sanitize or modify valid fields. If any field contains random keyboard spam, gibberish (e.g., "asdfg", "xyzpdq"), or meaningless placeholder text, replace only that garbage value with a realistic, high-quality professional value matching the candidate's target job title "${jobTitle}" and experience level "${experienceLevel}".
-- MANDATORY STRUCTURE: The letter must consist of exactly 6 short paragraphs, mapping precisely to these mandatory sections:
-  1. Introduction: A formal opening introducing the candidate (${fullName}) and expressing strong interest in the specific position of "${jobTitle}" at "${companyName}". Short (2-3 sentences max).
-  2. Professional Experience: Focus on the candidate's career suitability at the "${experienceLevel}" level. A compact, value-dense paragraph (3-4 sentences).
-  3. Skills Relevance: Discuss the candidate's key skills (${skills.join(', ')}) and how they map directly to a "${jobTitle}" at "${companyName}". A compact, value-dense paragraph (3-4 sentences).
-  4. Clubs & Leadership (MANDATORY, ONE MERGED PARAGRAPH):
-     * You MUST include a single, concise paragraph showcasing extracurriculars, clubs, or community involvement to highlight soft skills like leadership, teamwork, initiative, and collaboration.
-     * If multiple clubs are provided in the input, you MUST MERGE all of them into a single, cohesive paragraph focusing on transferable soft skills (e.g. teamwork, leadership, collaboration). Do NOT list the clubs individually or describe each one separately.
-     * Use the provided club data:
+
+LAYOUT STRUCTURE (MANDATORY EXACT POSITIONING):
+Produce the exact layout below. Align the blocks using spacing/blank spaces.
+
+[Candidate Block (Left)]                                [Company Block (Right)]
+${fullName}                                             ${companyName}
+[Candidate Address/City]                                [Recruiter Title/Name]
+[Candidate Phone]                                       [Company Address]
+${data.email || ''}
+
+                                                        [Candidate City], ${language === 'FR' ? 'le ' : ''}${dateStr}
+
+${subjectLabel} ${subjectSuffix}
+
+${salutation}
+
+1. Introduction: State the position applied for (${jobTitle} at ${companyName}), current status, and core intent. (2-3 sentences max).
+2. Professional Background: Focus on the candidate's career suitability at the "${experienceLevel}" level. A compact, value-dense paragraph (3-4 sentences).
+3. Skills Relevance: Discuss the candidate's key skills (${skills.join(', ')}) and how they map directly to the role. A compact, value-dense paragraph (3-4 sentences).
+4. Clubs & Leadership (MANDATORY, ONE MERGED PARAGRAPH):
+   * You MUST include a single, concise paragraph showcasing extracurriculars, clubs, or community involvement to highlight soft skills like leadership, teamwork, initiative, and collaboration.
+   * If multiple clubs are provided in the input, you MUST MERGE all of them into a single, cohesive paragraph focusing on transferable soft skills (e.g. teamwork, leadership, collaboration). Do NOT list the clubs individually or describe each one separately.
+   * Use the provided club data:
 ${clubsText ? clubsText : '       (No club information provided)'}
-     * If no club info is provided or if it is empty/gibberish, you MUST realistically infer a relevant professional extracurricular (e.g., local developer meetups, tech community groups, volunteering, mentoring, or open-source contributions) matching the target role "${jobTitle}" and skills, and write exactly 2-3 sentences about it. Do NOT mention that this was inferred.
-  5. Motivation: Short paragraph explaining why the candidate is driven to join "${companyName}" (referencing its reputation or industry position) and the value they bring (3-4 sentences).
-  6. Conclusion: A formal, polite closing expressing availability for an interview at "${companyName}" and thanking them for their time. Short (1-2 sentences).
+   * If no club info is provided or if it is empty/gibberish, you MUST realistically infer a relevant professional extracurricular (e.g., local developer meetups, tech community groups, volunteering, mentoring, or open-source contributions) matching the target role "${jobTitle}" and skills, and write exactly 2-3 sentences about it. Do NOT mention that this was inferred.
+5. Motivation: Short paragraph explaining why the candidate is driven to join "${companyName}" and why this role (3-4 sentences).
+6. Closing: A formal, polite closing expressing availability for an interview at "${companyName}" and thanking them for their time. (1-2 sentences).
+
+${signOff}
+
+${fullName}
 
 TONE GUIDE (${experienceLevel} level):
 ${toneGuide}
@@ -39,51 +70,82 @@ CANDIDATE INFORMATION:
 - Applying for: ${jobTitle} at ${companyName}
 - Key Skills: ${skills.join(', ')}
 - Experience Level: ${experienceLevel}
-- Language: ${language}
 
-Generate the final letter now. Begin directly with the formal salutation (e.g. "Dear Hiring Manager," in English or "Madame, Monsieur," in French) and sign off with "Sincerely," followed by the candidate's name (${fullName}) (or French equivalent).`;
+Generate the final letter now. Output ONLY the letter text starting from candidate name and ending with signature name.`;
   }
 
   buildRecommendationPrompt(data) {
     const {
       recommenderName, recommenderRole, candidateName, candidateRole,
       relationshipToCandidate, companyName, durationWorkedTogether,
-      skillsObserved, performanceLevel, language,
+      projectName, projectType, teamSize, workMode,
+      communicationEvidence, problemSolvingEvidence, ownershipEvidence,
     } = data;
+    const language = data.language || 'EN';
     const lang = language === 'FR' ? 'French' : 'English';
-    const performanceGuide = `Performance Level: ${performanceLevel}. The tone should reflect this high level of endorsement.`;
+    
+    const dateStr = language === 'FR' 
+      ? new Date().toLocaleDateString('fr-FR', { year: 'numeric', month: 'long', day: 'numeric' })
+      : new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
 
-    return `You are a professional senior HR manager and executive with 20+ years of experience writing formal recommendation letters for top-tier candidates. Write an HR-compliant, publication-ready recommendation letter.
+    const salutation = language === 'FR' ? 'Madame, Monsieur,' : 'To Whom It May Concern,';
+    const signOff = language === 'FR' ? 'Cordialement,' : 'Sincerely,';
 
-STRICT INSTRUCTIONS:
+    return `You are a Senior AI Systems Designer and Prompt Engineer specializing in dynamic, non-hardcoded HR recommendation letters. Write a formal recommendation letter in plain text format that is fully driven by the provided input fields with ZERO hardcoded content or static templates.
+
+CRITICAL DYNAMIC BEHAVIOR RULES:
+- ADAPTIVE STRUCTURE: The structure and paragraph ordering must adapt dynamically based on which inputs are present. Do NOT use a fixed template, predefined filler sentences, or static section outlines.
+- MISSING FIELDS HANDLING: If an input field is empty, missing, or vague, simply skip it or reduce its weight in the final text. Do NOT fabricate, guess, or extrapolate missing details.
+- CONTEXT-AWARE EMPHASIS: Adjust the tone and paragraph emphasis according to the candidate's target role ("${candidateRole || 'the candidate'}") and relationship.
+- STRICT DATA GROUNDING & TRACEABILITY: Every sentence in the output MUST map directly to the provided input values. No generic HR filler, no hallucinated achievements, no invented metrics.
+- PROPORTIONAL LENGTH: If few inputs are provided, automatically produce a shorter, compact letter. If highly detailed inputs are provided, expand the descriptions proportionally.
 - LANGUAGE: The letter must be written entirely in ${lang}.
-- FORMAT: Output ONLY the letter text. No markdown header metadata, no JSON wrapper, no intro/outro explanations, and no chat conversational remarks.
-- NO BULLET POINTS/LISTS: Ensure the letter flows as a natural, polished, cohesive multi-paragraph prose narrative.
-- NO GENERIC TEMPLATES OR PLACEHOLDERS: You MUST use the provided recommender and candidate details. Never fall back to placeholders like "[Company Name]", "[Candidate Name]", or "the company". Integrate the company name "${companyName}", candidate name "${candidateName}", and roles naturally.
-- INPUT SANITIZATION: Do not sanitize or modify valid fields. If any field contains random keyboard spam, gibberish (e.g., "asdfg", "xyzpdq"), or meaningless placeholder text, replace only that garbage value with a realistic, high-quality professional value matching the relationship and context.
-- MANDATORY STRUCTURE: The letter must consist of exactly 4 or 5 paragraphs, covering:
-  1. Context of Relationship: Clearly define who you are (${recommenderName}, writing as "${recommenderRole}"), your relationship to the candidate ("${relationshipToCandidate}"), and how long you worked together ("${durationWorkedTogether}") at "${companyName}".
-  2. Candidate Performance Overview: Provide an exceptional assessment of "${candidateName}"'s work quality and professional impact in their role as "${candidateRole}".
-  3. Key Strengths & Concrete Observations: Emphasize the candidate's demonstrated skills (${skillsObserved.join(', ')}) with realistic professional observations and achievements on the job.
-  4. Strong Endorsement & Closing: Provide a highly warm, unequivocal endorsement of "${candidateName}" for future opportunities, invite the reader to contact you for more details, and sign off formally.
+- STRICT LENGTH CONSTRAINT: The final letter (including the header, date, body, and signature) MUST NOT exceed 280 words total, and should be at least 220 words (A4 compact format).
+- FORMAT: Output ONLY the plain text letter. No HTML, no styling, no colors, no UI elements. Do not include markdown header metadata, no JSON wrapper, and no chat conversational remarks.
+- NO TITLE OR HEADING: Do NOT write "Letter of Recommendation" or any other title at the top of the output.
+- NO BULLET POINTS/LISTS: Ensure the letter body flows as a natural, polished, cohesive multi-paragraph prose narrative. Never use bullet points, tables, or numbered lists.
 
-TONE & PERFORMANCE GUIDE:
-- ${performanceGuide}
-- Tone must be warm, authoritative, and convincingly endorsing.
+INPUT DATA SCHEMA:
 
-RECOMMENDATION DETAILS:
-- Recommender Name: ${recommenderName}
-- Recommender Role: ${recommenderRole}
-- Candidate Name: ${candidateName}
-- Candidate Role: ${candidateRole}
-- Relationship: ${relationshipToCandidate}
-- Company: ${companyName}
-- Duration Worked Together: ${durationWorkedTogether}
-- Skills Observed: ${skillsObserved.join(', ')}
-- Performance Level: ${performanceLevel}
-- Language: ${language}
+1. Recommender:
+   - Name: ${recommenderName || '(Not provided)'}
+   - Role/Position: ${recommenderRole || '(Not provided)'}
+   - Company: ${companyName || '(Not provided)'}
 
-Generate the final letter now. Begin directly with the formal salutation (e.g. "To Whom It May Concern," in English or "Madame, Monsieur," in French) and sign off formally with the recommender's name and title.`;
+2. Candidate:
+   - Name: ${candidateName || '(Not provided)'}
+   - Role: ${candidateRole || '(Not provided)'}
+
+3. Collaboration Context:
+   - Relationship: ${relationshipToCandidate || '(Not provided)'}
+   - Duration: ${durationWorkedTogether || '(Not provided)'}
+   - Project Name: ${projectName || '(Not provided)'}
+   - Project Type/Scope: ${projectType || '(Not provided)'}
+   - Team Size: ${teamSize || '(Not provided)'}
+   - Work Mode/Collaboration Level: ${workMode || '(Not provided)'}
+
+4. Evidence-Based Soft Skills:
+   - Communication: ${communicationEvidence || '(Not provided)'}
+   - Problem-solving: ${problemSolvingEvidence || '(Not provided)'}
+   - Ownership & Autonomy: ${ownershipEvidence || '(Not provided)'}
+
+LAYOUT STRUCTURE (MANDATORY EXACT POSITIONING):
+Produce the exact layout below. Align the blocks using spacing/blank spaces.
+
+[Recommender Block (Left)]                              [Candidate/Date Block (Right)]
+${recommenderName || ''}                                  Candidate: ${candidateName || ''}
+${recommenderRole || ''}                                  Role: ${candidateRole || ''}
+${companyName || ''}                                      Period: ${durationWorkedTogether || ''}
+                                                        ${dateStr}
+
+${salutation}
+
+[Dynamic body paragraphs: construct dynamically using only present inputs, focusing on opening collaboration context, professional collaboration details, soft skills evidence (communication, problem solving, ownership), and a strong final recommendation/endorsement.]
+
+${signOff}
+
+${recommenderName || ''}
+${recommenderRole || ''}`;
   }
 
   getToneGuide(level) {
