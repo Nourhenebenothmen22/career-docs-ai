@@ -40,4 +40,10 @@ const config = Object.freeze({
   }
 });
 
+if (process.env.NODE_ENV === 'production') {
+  if (config.jwt.secret === 'default_jwt_secret_change_me_in_prod' || config.jwt.refreshSecret === 'default_jwt_refresh_secret_change_me_in_prod') {
+    throw new Error('FATAL SECURITY ERROR: Default JWT secrets cannot be used in production mode. Set JWT_SECRET and JWT_REFRESH_SECRET in environment variables.');
+  }
+}
+
 module.exports = config;
