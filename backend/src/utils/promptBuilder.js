@@ -78,21 +78,18 @@ Generate the final letter now. Output ONLY the letter text starting from candida
     const {
       recommenderName, recommenderRole, candidateName, candidateRole,
       relationshipToCandidate, companyName, durationWorkedTogether,
-      skillsObserved, performanceLevel, language,
+      skillsObserved,
       projectName, projectType, teamSize, workMode,
       keyAchievements,
       communicationEvidence, problemSolvingEvidence, ownershipEvidence,
-      recommendationStrength,
     } = data;
-    const languageVal = language || 'EN';
-    const lang = languageVal === 'FR' ? 'French' : 'English';
+    const languageVal = 'EN';
+    const lang = 'English';
     
-    const dateStr = languageVal === 'FR' 
-      ? new Date().toLocaleDateString('fr-FR', { year: 'numeric', month: 'long', day: 'numeric' })
-      : new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+    const dateStr = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
 
-    const salutation = languageVal === 'FR' ? 'Madame, Monsieur,' : 'To Whom It May Concern,';
-    const signOff = languageVal === 'FR' ? 'Cordialement,' : 'Sincerely,';
+    const salutation = 'To Whom It May Concern,';
+    const signOff = 'Sincerely,';
 
     return `You are a Senior AI Systems Designer and Prompt Engineer specializing in dynamic, non-hardcoded HR recommendation letters. Write a formal recommendation letter in plain text format that is fully driven by the provided input fields with ZERO hardcoded content or static templates.
 
@@ -138,10 +135,6 @@ INPUT DATA SCHEMA:
    - Problem-solving: ${problemSolvingEvidence || '(Not provided)'}
    - Ownership & Autonomy: ${ownershipEvidence || '(Not provided)'}
 
-7. Overall Recommendation:
-   - Performance level: ${performanceLevel || 'excellent'}
-   - Recommendation strength: ${recommendationStrength || 'strongly recommend'}
-
 LAYOUT STRUCTURE (MANDATORY EXACT POSITIONING):
 Produce the exact layout below. Align the blocks using spacing/blank spaces.
 
@@ -153,7 +146,18 @@ ${companyName || ''}                                      Period: ${durationWork
 
 ${salutation}
 
-[Dynamic body paragraphs: construct dynamically using only present inputs, focusing on opening collaboration context, relationship details, academic & professional skills, key achievements, professional qualities (soft skills), and a strong final overall recommendation strictly proportional to performance level.]
+[Dynamic body paragraphs: construct the body paragraphs using exactly these three numbered sections:
+
+1. Relation avec le Candidat
+Under this section, you must first output these specific field labels on their own line: "Relationship" and "Duration". Explain them in prose. Do NOT append trailing periods (.) or colons (:) to the section titles or field labels (e.g. write "1. Relation avec le Candidat" instead of "1. Relation avec le Candidat." or "1. Relation avec le Candidat:", and write "Relationship" instead of "Relationship." or "Relationship:").
+
+2. Compétences Observées
+Under this section, you must first output these specific field labels on their own line: "Academic & Professional Skills" and "Key Achievements". Explain them in prose. Do NOT append trailing periods (.) or colons (:) to the section titles or field labels (e.g. write "2. Compétences Observées" instead of "2. Compétences Observées.").
+
+3. Soft Skills
+Under this section, you must first output this specific field label on its own line: "Professional Qualities". Explain it in prose. Do NOT append trailing periods (.) or colons (:) to the section titles or field labels (e.g. write "3. Soft Skills" instead of "3. Soft Skills.").
+
+Ensure there is a blank line before and after each section heading and field label.]
 
 ${signOff}
 
