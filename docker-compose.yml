@@ -68,7 +68,7 @@ services:
       - frontend-net
       - backend-net
     healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:5000/api/health"]
+      test: ["CMD", "node", "-e", "const http = require('http'); http.get('http://localhost:5000/api/health', r => process.exit(r.statusCode === 200 ? 0 : 1))"]
       interval: 15s
       timeout: 10s
       retries: 3
