@@ -46,6 +46,28 @@ class StorageService {
     }
   }
 
+  async downloadStream(key) {
+    if (!isStorageEnabled()) return null;
+    try {
+      const command = new GetObjectCommand({
+        Bucket: bucketName,
+        Key: key,
+      });
+      const response = await s3Client.send(command);
+      return {
+        stream: response.Body,
+        contentLength: response.ContentLength,
+      };
+    } catch (err) {
+      if (err.name === 'NoSuchKey') {
+        logger.debug('S3 file not found', { key });
+      } else {
+        logger.error('S3 file download stream failed', { key, message: err.message });
+      }
+      return null;
+    }
+  }
+
   async exists(key) {
     if (!isStorageEnabled()) return false;
     try {
