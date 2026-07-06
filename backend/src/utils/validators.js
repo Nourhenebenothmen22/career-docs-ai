@@ -28,8 +28,6 @@ const recommendationValidation = [
   body('durationWorkedTogether').trim().notEmpty().withMessage('Duration is required'),
   body('skillsObserved').optional().isArray(),
   body('skillsObserved.*').optional().trim(),
-  body('performanceLevel').isIn(PERFORMANCE_LEVELS).withMessage(`Performance level must be ${PERFORMANCE_LEVELS.join(', ')}`),
-  body('language').optional().isIn(LANGUAGES).withMessage(`Language must be ${LANGUAGES.join(' or ')}`),
 
   // New Collaboration Context fields
   body('projectName').optional().trim(),
@@ -42,9 +40,6 @@ const recommendationValidation = [
   body('communicationEvidence').optional().trim(),
   body('problemSolvingEvidence').optional().trim(),
   body('ownershipEvidence').optional().trim(),
-  
-  // Recommendation strength
-  body('recommendationStrength').optional().trim(),
 ];
 
 const historyPagination = [
