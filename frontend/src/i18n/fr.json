@@ -156,6 +156,9 @@
   "recommendation": {
     "title": "Lettre de Recommandation",
     "subtitle": "Créez une lettre de recommandation professionnelle pour un collègue.",
+    "collaborationContext": "Relation avec le Candidat",
+    "skillsAndAchievements": "Compétences Observées",
+    "softSkills": "Soft Skills",
     "recommenderInfo": "Informations du Recommendateur",
     "recommenderInfoDesc": "Vos coordonnées en tant que rédacteur de la recommandation",
     "candidateInfo": "Informations du Candidat",
