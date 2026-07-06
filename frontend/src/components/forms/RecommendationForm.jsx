@@ -127,7 +127,7 @@ export default function RecommendationForm({ formData, updateField, errors, onGe
               onChange={e => updateField('projectName', e.target.value)}
             />
             <Input
-              label={t('recommendation.projectType') || 'Project Type / Scope'}
+              label={t('recommendation.projectType') || 'Project Type'}
               error={errors.projectType}
               placeholder="e.g. SaaS Portal / Web Application / REST API"
               value={formData.projectType || ''}
@@ -143,7 +143,7 @@ export default function RecommendationForm({ formData, updateField, errors, onGe
               onChange={e => updateField('teamSize', e.target.value)}
             />
             <Input
-              label={t('recommendation.workMode') || 'Work Mode / Collaboration Level'}
+              label={t('recommendation.workMode') || 'Work Mode'}
               error={errors.workMode}
               placeholder="e.g. Remote, Collaborative co-developer"
               value={formData.workMode || ''}
@@ -168,7 +168,7 @@ export default function RecommendationForm({ formData, updateField, errors, onGe
         </div>
         <div className="space-y-4">
           <Input
-            label={t('recommendation.skillsObserved') || 'Academic & Professional Skills (comma-separated)'}
+            label={t('recommendation.skillsObserved') || 'Observed Skills'}
             error={errors.skillsObserved}
             placeholder={t('recommendation.skillsObservedPlaceholder') || 'e.g. Leadership, Problem-solving, Python'}
             value={formData.skillsObserved || ''}
@@ -199,21 +199,21 @@ export default function RecommendationForm({ formData, updateField, errors, onGe
         </div>
         <div className="space-y-4">
           <Textarea
-            label={t('recommendation.communicationEvidence') || 'Communication & Documentation Examples'}
+            label={t('recommendation.communicationEvidence') || 'Communication Evidence'}
             error={errors.communicationEvidence}
             placeholder="e.g. Created thorough API wiki in Swagger and mentored two junior developers..."
             value={formData.communicationEvidence || ''}
             onChange={e => updateField('communicationEvidence', e.target.value)}
           />
           <Textarea
-            label={t('recommendation.problemSolvingEvidence') || 'Problem-Solving / Analytical Proof'}
+            label={t('recommendation.problemSolvingEvidence') || 'Problem Solving Evidence'}
             error={errors.problemSolvingEvidence}
             placeholder="e.g. Restructured data indices independently during production downtime..."
             value={formData.problemSolvingEvidence || ''}
             onChange={e => updateField('problemSolvingEvidence', e.target.value)}
           />
           <Textarea
-            label={t('recommendation.ownershipEvidence') || 'Ownership & Autonomy Examples'}
+            label={t('recommendation.ownershipEvidence') || 'Ownership Evidence'}
             error={errors.ownershipEvidence}
             placeholder="e.g. Acted as primary owner for CI/CD workflow automation..."
             value={formData.ownershipEvidence || ''}
