@@ -82,10 +82,11 @@ Generate the final letter now. Output ONLY the letter text starting from candida
       projectName, projectType, teamSize, workMode,
       keyAchievements,
       communicationEvidence, problemSolvingEvidence, ownershipEvidence,
+      recommenderContact, recommendationStrength, location, date
     } = data;
     const languageVal = (language || 'EN').toUpperCase();
     const lang = languageVal === 'FR' ? 'French' : languageVal === 'AR' ? 'Arabic' : 'English';
-
+    
     const dateStr = languageVal === 'FR'
       ? new Date().toLocaleDateString('fr-FR', { year: 'numeric', month: 'long', day: 'numeric' })
       : languageVal === 'AR'
@@ -101,13 +102,13 @@ Generate the final letter now. Output ONLY the letter text starting from candida
       ? 'الموضوع: رسالة توصية لـ'
       : 'Subject: Recommendation Letter for';
 
-    const skillsText = skillsObserved && skillsObserved.length > 0 ? skillsObserved.join(', ') : '(None provided)';
+    const skillsText = skillsObserved && skillsObserved.length > 0 ? skillsObserved.join(', ') : '[not provided]';
 
     const qualitiesText = [
       communicationEvidence ? `Communication: ${communicationEvidence}` : null,
       problemSolvingEvidence ? `Problem-solving: ${problemSolvingEvidence}` : null,
       ownershipEvidence ? `Ownership & Autonomy: ${ownershipEvidence}` : null,
-    ].filter(Boolean).join('\n');
+    ].filter(Boolean).join('\n') || '[not provided]';
 
     const projectsText = [
       projectName ? `Project: ${projectName}` : null,
@@ -115,52 +116,88 @@ Generate the final letter now. Output ONLY the letter text starting from candida
       teamSize ? `Team: ${teamSize}` : null,
       workMode ? `Mode: ${workMode}` : null,
       keyAchievements ? `Achievements: ${keyAchievements}` : null,
-    ].filter(Boolean).join('\n');
+    ].filter(Boolean).join('\n') || '[not provided]';
 
-    return `You are a professional HR letter writer with 20+ years of experience. Write a formal recommendation letter in plain text format based ONLY on the provided input data. Do NOT invent any information.
+    const locationVal = location || '[not provided]';
+    const dateVal = date || dateStr;
 
-STRICT INSTRUCTIONS:
-- LANGUAGE: Write entirely in ${lang}.
-- LENGTH: 250-350 words total, fitting one A4 page.
-- FORMAT: Output ONLY plain text. No HTML, no markdown, no JSON, no commentary.
-- NO SECTION HEADINGS: Do NOT use numbered sections, labels, or titles in the body. Write 5 flowing prose paragraphs.
-- NO BULLET POINTS OR LISTS: Natural prose paragraphs only.
-- NO PLACEHOLDER TEXT: Every sentence must derive from the actual input data.
+    return `You are a Senior HR Document Generator and Prompt Engineer. Write a professional, natural Letter of Recommendation in strict A4 format using ONLY the provided structured form data. Do not invent information.
 
-OUTPUT MUST USE EXACTLY THIS STRUCTURE:
+STRICT RULES:
+- Use ONLY the provided form field values. Do NOT hallucinate names, dates, companies, or achievements.
+- If a field is missing or contains "[not provided]", leave a blank placeholder "[not provided]" in the final letter.
+- Language: The letter must be written entirely in ${lang}.
+- Tone: formal, HR professional.
+- Structure must follow EXACTLY a real business recommendation letter layout.
+- The body of the letter must flow as a series of natural paragraphs. Do NOT include any headings, subheadings, section labels, or field names (such as "Relation avec le Candidat", "Durée", "Paragraph 1", "Context", or form terminology) inside the letter body.
+- Do NOT start any paragraph with labels like "Paragraph 1:", "Paragraph 2:", etc. Start the paragraph prose directly.
+- No bullet points, tables, or numbered lists.
+- Do not add any chat remarks or metadata. Return only the letter.
 
-${subjectLabel} ${candidateName || ''}
+LAYOUT STRUCTURE (MANDATORY EXACT POSITIONING):
+Produce the exact layout below. Align the blocks using spacing/blank spaces.
+
+[Recommender Block (Left)]                              [Location & Date Block (Right)]
+[recommender_name]                                       [location], [date]
+[recommender_company]
+[recommender_role]
+[recommender_contact]
+
+${subjectLabel} [candidate_name]
 
 ${salutation}
 
-Paragraph 1 - Context:
-Describe the relationship between the recommender (${recommenderName || 'the recommender'}, ${recommenderRole || ''} at ${companyName || ''}) and the candidate (${candidateName || ''}). Mention the duration of collaboration (${durationWorkedTogether || ''}) and the company/department context.
+[Body Paragraphs - Output exactly 5 natural, cohesive prose paragraphs with no headings or labels in between them:
 
-Paragraph 2 - Responsibilities:
-Describe the candidate's role (${candidateRole || ''}) and main responsibilities. Mention specific projects or achievements if provided: ${projectsText || 'No project details provided'}.
+Paragraph 1 (context):
+- Start directly with the professional recommendation statement.
+- Introduce the relationship between the recommender and the candidate.
+- Mention the collaboration duration and company context if available.
+- Reference styles by language:
+  * French: "Je recommande vivement [candidate_name] pour toute opportunité professionnelle correspondant à son profil. J’ai eu l’occasion de collaborer avec [candidate_name] pendant [collaboration_duration] au sein de [recommender_company], où j’ai pu apprécier ses compétences, son engagement et son professionnalisme."
+  * English: "I highly recommend [candidate_name] for any professional opportunity matching their profile. I had the opportunity to collaborate with [candidate_name] for [collaboration_duration] at [recommender_company], where I was able to appreciate their skills, commitment, and professionalism."
+  * Arabic (RTL): "أوصي بشدة بـ [candidate_name] لأي فرصة مهنية تتوافق مع ملفه الشخصي. لقد أتيحت لي الفرصة للتعاون مع [candidate_name] لمدة [collaboration_duration] في [recommender_company]، حيث كان بإمكاني تقدير مهاراته والتزامه ومهنيته."
+- Adapt the placeholders dynamically with form data. Do not use the raw placeholders.
 
-Paragraph 3 - Skills Evaluation:
-Evaluate the candidate's technical and professional skills: ${skillsText}. Provide concrete observations where available.
+Paragraph 2 (responsibilities):
+- Describe candidate role, main missions, and key projects handled (only if provided).
 
-Paragraph 4 - Personal Qualities:
-Describe the candidate's soft skills and professional behavior. ${qualitiesText || 'No specific evidence provided'}. Comment on reliability, attitude, and work ethic.
+Paragraph 3 (skills evaluation):
+- Evaluate technical skills and professional qualities/soft skills based ONLY on the provided skills and qualities. Do not invent any skills.
 
-Paragraph 5 - Recommendation Statement:
-Give a clear, strong recommendation. State why the candidate would be valuable to a future employer. Be specific and sincere.
+Paragraph 4 (personal impression):
+- Add professional impression, behavior, attitude, and reliability. Avoid exaggerated statements.
+
+Paragraph 5 (recommendation statement):
+- Clear recommendation statement based only on recommendation_strength.
+
+Closing:
+- Add a polite closing sentence expressing availability for contact (recommender contact).]
 
 ${signOff}
 
-${recommenderName || ''}
-${recommenderRole || ''}
-${companyName || ''}
+[recommender_name]
+[recommender_role]
+[recommender_company]
+[Signature]
 
-INPUT DATA:
-- Recommender: ${recommenderName || '(Not provided)'}, ${recommenderRole || '(Not provided)'}, ${companyName || '(Not provided)'}
-- Candidate: ${candidateName || '(Not provided)'}, ${candidateRole || '(Not provided)'}
-- Relationship: ${relationshipToCandidate || '(Not provided)'}, Duration: ${durationWorkedTogether || '(Not provided)'}
-- Skills: ${skillsText}
-- Projects: ${projectsText || '(Not provided)'}
-- Qualities: ${qualitiesText || '(Not provided)'}`;
+STRICT FORM INPUTS:
+- recommender_name: ${recommenderName || '[not provided]'}
+- recommender_company: ${companyName || '[not provided]'}
+- recommender_role: ${recommenderRole || '[not provided]'}
+- recommender_contact: ${recommenderContact || '[not provided]'}
+- candidate_name: ${candidateName || '[not provided]'}
+- candidate_role: ${candidateRole || '[not provided]'}
+- candidate_company: ${companyName || '[not provided]'}
+- collaboration_duration: ${durationWorkedTogether || '[not provided]'}
+- projects:
+${projectsText}
+- skills: ${skillsText}
+- qualities:
+${qualitiesText}
+- recommendation_strength: ${recommendationStrength || '[not provided]'}
+- location: ${locationVal}
+- date: ${dateVal}`;
   }
 
   getToneGuide(level) {
