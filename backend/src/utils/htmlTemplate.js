@@ -263,274 +263,137 @@ class HtmlTemplate {
 
   recommendationLetter(data, letterText) {
     const language = data.language || 'EN';
-    const dateStr = language === 'FR' 
+    const dateStr = language === 'FR'
       ? new Date().toLocaleDateString('fr-FR', { year: 'numeric', month: 'long', day: 'numeric' })
+      : language === 'AR'
+      ? new Date().toLocaleDateString('ar-EG', { year: 'numeric', month: 'long', day: 'numeric' })
       : new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
 
-    const defaultSalutation = language === 'FR' ? 'Madame, Monsieur,' : 'To Whom It May Concern,';
-    const defaultSignOff = language === 'FR' ? 'Cordialement,' : 'Sincerely,';
+    const defaultSalutation = language === 'FR' ? 'Madame, Monsieur,' : language === 'AR' ? 'السيد/السيدة المحترم(ة)،' : 'To Whom It May Concern,';
+    const defaultSignOff = language === 'FR' ? 'Cordialement,' : language === 'AR' ? 'مع خالص التقدير،' : 'Sincerely,';
     
     const parsed = parseLetter(
-      letterText, 
-      defaultSalutation, 
-      defaultSignOff, 
-      data.recommenderName || '', 
+      letterText,
+      defaultSalutation,
+      defaultSignOff,
+      data.recommenderName || '',
       data.recommenderRole || ''
     );
 
-    const titleText = language === 'FR' ? 'LETTRE DE RECOMMANDATION' : 'LETTER OF RECOMMENDATION';
+    const subjectLabel = language === 'FR'
+      ? 'Objet : Lettre de recommandation pour'
+      : language === 'AR'
+      ? 'الموضوع: رسالة توصية لـ'
+      : 'Subject: Recommendation Letter for';
+    const subjectText = parsed.subject || `${subjectLabel} ${data.candidateName || ''}`;
+
+    const isRtl = language === 'AR';
+    const dirAttr = isRtl ? 'rtl' : 'ltr';
+    const headerRightAlign = isRtl ? 'left' : 'right';
 
     return `<!DOCTYPE html>
-<html lang="${language.toLowerCase()}">
+<html lang="${language.toLowerCase()}" dir="${dirAttr}">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Recommendation Letter</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
   <style>
-    @page {
-      size: A4;
-      margin: 0;
-    }
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
+    @page { size: A4; margin: 0; }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
-      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-      font-size: 10.5pt;
-      line-height: 1.7;
-      color: #1e293b;
+      font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif;
+      font-size: 11pt;
+      line-height: 1.6;
+      color: #000000;
       background: #ffffff;
-      -webkit-font-smoothing: antialiased;
     }
     .page {
       width: 210mm;
       min-height: 297mm;
-      padding: 25mm 22mm 22mm 22mm;
+      padding: 30mm 25mm 25mm 25mm;
       position: relative;
-      background: #ffffff;
     }
-    /* Accent Top Border */
-    .top-accent {
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      height: 6px;
-      background: linear-gradient(90deg, #1e3a8a 0%, #3b82f6 100%);
+    .header {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 45px;
     }
-    /* Header Metadata Grid */
-    .meta-section {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 30px;
-      margin-bottom: 35px;
-      padding-bottom: 20px;
-      border-bottom: 1px solid #e2e8f0;
+    .header-left {
+      font-size: 10pt;
+      line-height: 1.5;
     }
-    .meta-block {
-      font-size: 9.5pt;
-      color: #475569;
-    }
-    .meta-block-right {
-      text-align: right;
-    }
-    .meta-label {
-      font-size: 7.5pt;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      color: #94a3b8;
-      margin-bottom: 6px;
-    }
-    .meta-name {
-      font-family: 'Lora', Georgia, serif;
-      font-size: 12pt;
-      font-weight: 600;
-      color: #0f172a;
-      margin-bottom: 2px;
-    }
-    .meta-detail {
-      font-weight: 500;
-      color: #334155;
-    }
-    .meta-subdetail {
-      font-size: 9pt;
-      color: #64748b;
-    }
-    .date-display {
-      font-size: 9.5pt;
-      color: #64748b;
-      margin-top: 8px;
-    }
-    /* Document Title */
-    .doc-title {
-      font-family: 'Lora', Georgia, serif;
-      font-size: 14pt;
-      font-weight: 700;
-      color: #0f172a;
-      text-align: center;
-      letter-spacing: 0.08em;
-      margin-bottom: 30px;
-      text-transform: uppercase;
-    }
-    /* Letter Body styling */
-    .salutation {
-      font-family: 'Lora', Georgia, serif;
+    .header-left .name {
       font-size: 11pt;
-      font-weight: 500;
-      color: #0f172a;
-      margin-bottom: 18px;
+      font-weight: bold;
+      margin-bottom: 4px;
+    }
+    .header-right {
+      font-size: 10pt;
+      line-height: 1.5;
+      text-align: ${headerRightAlign};
+    }
+    .subject {
+      font-size: 11pt;
+      font-weight: bold;
+      margin-bottom: 30px;
+    }
+    .salutation {
+      font-size: 11pt;
+      margin-bottom: 20px;
     }
     .body-text {
       text-align: justify;
-      font-size: 10.5pt;
-      color: #1e293b;
+      font-size: 11pt;
+      line-height: 1.6;
+      margin-bottom: 30px;
     }
-    .body-p {
-      margin-bottom: 14px;
+    .body-text p {
+      margin-bottom: 16px;
+      text-indent: 0;
     }
-    .section-title {
-      font-family: 'Lora', Georgia, serif;
-      font-size: 11.5pt;
-      font-weight: 700;
-      color: #0f172a;
-      margin-top: 22px;
-      margin-bottom: 8px;
-    }
-    .section-number {
-      font-family: 'Inter', sans-serif;
-      font-size: 10pt;
-      font-weight: 400;
-      color: #64748b;
-      margin-right: 6px;
-    }
-    .field-label {
-      font-family: 'Inter', sans-serif;
-      font-weight: 600;
-      color: #334155;
-      margin-top: 14px;
-      margin-bottom: 4px;
-      font-size: 10pt;
-    }
-    /* Signature Block */
     .signature-section {
-      margin-top: 40px;
-      page-break-inside: avoid;
-    }
-    .sign-off {
-      font-family: 'Lora', Georgia, serif;
-      font-style: italic;
-      color: #334155;
-      margin-bottom: 35px;
-    }
-    .signature-line {
-      width: 180px;
-      border-bottom: 1px solid #cbd5e1;
-      margin-bottom: 12px;
+      font-size: 11pt;
+      line-height: 1.6;
+      margin-top: 50px;
     }
     .signature-name {
-      font-family: 'Lora', Georgia, serif;
-      font-size: 11pt;
-      font-weight: 600;
-      color: #0f172a;
+      font-weight: bold;
+      margin-top: 6px;
     }
     .signature-role {
-      font-size: 9.5pt;
-      color: #475569;
-      font-weight: 500;
+      font-size: 10pt;
     }
     .signature-company {
-      font-size: 9pt;
-      color: #64748b;
+      font-size: 10pt;
     }
   </style>
 </head>
 <body>
   <div class="page">
-    <div class="top-accent"></div>
-    
-    <div class="meta-section">
-      <div class="meta-block">
-        <div class="meta-label">${language === 'FR' ? 'De' : 'From'}</div>
-        <div class="meta-name">${data.recommenderName || ''}</div>
-        <div class="meta-detail">${data.recommenderRole || ''}</div>
-        <div class="meta-subdetail">${data.companyName || ''}</div>
+    <div class="header">
+      <div class="header-left">
+        <div class="name">${data.recommenderName || '[not provided]'}</div>
+        <div>${data.companyName || '[not provided]'}</div>
+        <div>${data.recommenderRole || '[not provided]'}</div>
+        <div>[not provided]</div>
       </div>
-      <div class="meta-block meta-block-right">
-        <div class="meta-label">${language === 'FR' ? 'Candidat & Contexte' : 'Candidate & Context'}</div>
-        <div class="meta-name" style="font-size: 11pt;">${data.candidateName || ''}</div>
-        <div class="meta-detail" style="font-size: 9.5pt;">${data.candidateRole || ''}</div>
-        ${data.durationWorkedTogether ? `<div class="meta-subdetail">${language === 'FR' ? 'Période' : 'Period'}: ${data.durationWorkedTogether}</div>` : ''}
-        <div class="date-display">${dateStr}</div>
+      <div class="header-right">
+        <div>[not provided], ${dateStr}</div>
       </div>
     </div>
 
-    <div class="doc-title">${titleText}</div>
+    <div class="subject">${subjectText}</div>
 
-    <div class="salutation">
-      ${parsed.salutation}
-    </div>
+    <div class="salutation">${parsed.salutation}</div>
 
     <div class="body-text">
-      ${parsed.bodyParagraphs.map(p => {
-        let cleaned = p.trim();
-        if (!cleaned) return '';
-
-        const allowedTitles = [
-          'collaboration context', 'skills & achievements', 'soft skills', 'skills & key achievements',
-          'relationship with the candidate', 'observed skills',
-          'relation avec le candidat', 'compétences observées',
-          'علاقة مع المترشح', 'المهارات الملاحظة', 'المهارات الشخصية'
-        ];
-
-        const allowedLabels = [
-          'relationship', 'duration', 'responsibilities', 'academic / professional skills', 'academic & professional skills', 'key achievements', 'professional qualities', 'overall recommendation', 'closing statement', 'signature',
-          'relation', 'durée', 'responsabilités', 'compétences académiques & professionnelles', 'réalisations clés', 'qualités professionnelles',
-          'العلاقة', 'المدة', 'المسؤوليات', 'المهارات الأكاديمية والمهنية', 'الإنجازات الرئيسية', 'المهارات الشخصية'
-        ];
-
-        // 1. Match numbered headings: e.g. "1. Relationship with the Candidate.", "2. Observed Skills:", etc.
-        const headingMatch = cleaned.match(/^(\d+)\.\s+([^.:]+)[.:]?$/);
-        if (headingMatch) {
-          const num = headingMatch[1];
-          const title = headingMatch[2].trim();
-          if (allowedTitles.includes(title.toLowerCase())) {
-            return `<h3 class="section-title"><span class="section-number">${num}.</span>${title}</h3>`;
-          }
-        }
-
-        // 2. Match unnumbered labels/headings: e.g. "Relationship.", "Duration:", etc.
-        const labelMatch = cleaned.match(/^([^.:]+)[.:]?$/);
-        if (labelMatch) {
-          const label = labelMatch[1].trim();
-          if (allowedLabels.includes(label.toLowerCase())) {
-            return `<p class="field-label">${label}</p>`;
-          }
-        }
-
-        // 3. Fallback: inline label cleanup e.g. "Relationship: Direct Supervisor" or "Relationship. Direct Supervisor"
-        for (let baseLabel of allowedLabels) {
-          const regex = new RegExp('^(' + baseLabel.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&') + ')[.:]\\s*', 'i');
-          if (regex.test(cleaned)) {
-            cleaned = cleaned.replace(regex, '$1 ');
-            break;
-          }
-        }
-
-        return `<p class="body-p">${cleaned}</p>`;
-      }).join('')}
+      ${(parsed.bodyParagraphs.length > 0 ? parsed.bodyParagraphs : [letterText]).map(p => `<p>${p}</p>`).join('')}
     </div>
 
     <div class="signature-section">
-      <div class="sign-off">${parsed.signOff}</div>
-      <div class="signature-line"></div>
+      <div>${parsed.signOff}</div>
       <div class="signature-name">${parsed.signature}</div>
-      ${parsed.signatureRole ? `<div class="signature-role">${parsed.signatureRole}</div>` : ''}
+      <div class="signature-role">${parsed.signatureRole}</div>
       <div class="signature-company">${data.companyName || ''}</div>
     </div>
   </div>
