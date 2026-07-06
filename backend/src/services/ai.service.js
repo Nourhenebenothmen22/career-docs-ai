@@ -456,7 +456,7 @@ class AiService {
         ``,
         `I am writing to formally recommend ${candidate}, whom I have had the privilege of working with during their tenure at ${companyName}. As ${extract('Recommender Role') || 'a professional colleague'}, I have witnessed firsthand their exceptional capabilities and contributions to our organization.`,
         ``,
-        `${candidate} demonstrated outstanding performance in their role as ${extract('Candidate Role') || jobTitle}, consistently delivering high-quality results and showing remarkable professionalism. Their work ethic, combined with their technical proficiency, made them a valuable asset to our team.`,
+        `${candidate} demonstrated outstanding performance in their role as ${extract('Candidate Role') || jobTitle}, consistently delivering high-quality results and showing remarkable professionalism. Their work ethic, combined with their collaborative attitude, made them a valuable asset to our team.`,
         ``,
         `I am confident that ${candidate} will bring the same level of dedication and excellence to any future role. I give my highest recommendation without reservation.`,
         ``,
