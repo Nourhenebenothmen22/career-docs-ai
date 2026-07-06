@@ -25,6 +25,30 @@ export default function Header() {
               <img src="/logo-risalatech.png" alt="RISALATECH" className="h-8 w-auto" />
               <span className="hidden sm:inline text-caption font-bold text-gray-900">{t('app.name')}</span>
             </NavLink>
+            {user && (
+              <nav className="flex items-center gap-4 ml-4 border-l pl-4 border-gray-200">
+                <NavLink
+                  to="/recommendation-letter"
+                  className={({ isActive }) =>
+                    `text-sm font-medium transition-colors ${
+                      isActive ? 'text-primary-600 font-semibold' : 'text-gray-500 hover:text-gray-900'
+                    }`
+                  }
+                >
+                  {t('recommendation.title') || 'Recommendation Letter'}
+                </NavLink>
+                <NavLink
+                  to="/motivation-letter"
+                  className={({ isActive }) =>
+                    `text-sm font-medium transition-colors ${
+                      isActive ? 'text-primary-600 font-semibold' : 'text-gray-500 hover:text-gray-900'
+                    }`
+                  }
+                >
+                  {t('motivation.title') || 'Motivation Letter'}
+                </NavLink>
+              </nav>
+            )}
           </div>
 
           <div className="flex items-center gap-4">
