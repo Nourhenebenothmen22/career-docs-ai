@@ -48,7 +48,8 @@ class PdfGenerator {
     let page;
     try {
       page = await browser.newPage();
-      await page.setContent(htmlContent, { waitUntil: 'networkidle0' });
+      await page.setJavaScriptEnabled(false);
+      await page.setContent(htmlContent, { waitUntil: 'load' });
       const pdfBuffer = await page.pdf({
         format: 'A4',
         printBackground: true,
@@ -71,25 +72,54 @@ class PdfGenerator {
       return this.browser;
     }
 
+    if (this.browserPromise) {
+      this.browserRefCount += 1;
+      clearTimeout(this.idleTimer);
+      return this.browserPromise;
+    }
+
     const executablePath = findBrowser();
     const launchOptions = {
       headless: true,
-      args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-gpu', '--disable-dev-shm-usage'],
+      args: [
+        '--no-sandbox',
+        '--disable-setuid-sandbox',
+        '--disable-gpu',
+        '--disable-dev-shm-usage',
+        '--disable-extensions',
+        '--no-first-run',
+        '--no-default-browser-check',
+        '--font-render-hinting=none',
+      ],
     };
     if (executablePath) {
       launchOptions.executablePath = executablePath;
       logger.debug(`Using browser at: ${executablePath}`);
     }
 
-    this.browser = await puppeteer.launch(launchOptions);
     this.browserRefCount = 1;
-    logger.debug('Browser instance created');
-    return this.browser;
+    clearTimeout(this.idleTimer);
+
+    this.browserPromise = puppeteer.launch(launchOptions)
+      .then(browser => {
+        this.browser = browser;
+        this.browserPromise = null;
+        logger.debug('Browser instance created');
+        return browser;
+      })
+      .catch(err => {
+        this.browserPromise = null;
+        this.browserRefCount = 0;
+        logger.error('Failed to launch browser', { message: err.message });
+        throw err;
+      });
+
+    return this.browserPromise;
   }
 
   releaseBrowser() {
     this.browserRefCount -= 1;
-    if (this.browserRefCount <= 0 && this.browser) {
+    if (this.browserRefCount <= 0 && (this.browser || this.browserPromise)) {
       this.idleTimer = setTimeout(() => {
         this.closeBrowser();
       }, 30000);
@@ -105,8 +135,9 @@ class PdfGenerator {
         logger.error('Error closing browser', { message: err.message });
       }
       this.browser = null;
-      this.browserRefCount = 0;
     }
+    this.browserPromise = null;
+    this.browserRefCount = 0;
   }
 
   async shutdown() {
