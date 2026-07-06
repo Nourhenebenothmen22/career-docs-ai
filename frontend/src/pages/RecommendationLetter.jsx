@@ -74,6 +74,7 @@ export default function RecommendationLetter() {
     try {
       const payload = {
         ...formData,
+        id: result?.id,
         language: i18n.language.toUpperCase(),
         skillsObserved: parseSkills(formData.skillsObserved || ''),
       };
@@ -82,7 +83,7 @@ export default function RecommendationLetter() {
     } catch {
       addToast(t('toast.pdfUnavailable'), 'error');
     }
-  }, [formData, i18n, t, addToast]);
+  }, [formData, result, i18n, t, addToast]);
 
   const handleReset = useCallback(() => { reset(); setResult(null); }, [reset]);
 
